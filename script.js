@@ -9,14 +9,19 @@ function init_tab(n, str) {
 
 function constr_grille(tab, images) {
     for (let i = 0; i < tab.length; i++) {
-        let elt = '<div class="col-4 col-sm-3 col-md-2 col-lg-1 case text-center">';
-        elt += '<img src=' + images + '.png />';
-        elt +=  '<p>' + tab[i] + '</p>' + '</div>'
+        let elt = gen_presentation(tab[i], "5€", images);
         let el = $(elt);
         $("#grille").append(el);
     }    
 }
 
+function gen_presentation(name, price, image){
+    let elt = '<div class="col-sm-4 col-md-3 col-lg-3">';
+    elt += '<div class="card mb-4 shadow-sm img-hover" style="width:150px;">'
+    elt += '<img src="'+image+'" class="card-img-top" alt="image de '+name+'">'
+    elt +=  '<div class="card-body"><h5 class="card-title">'+name+'</h5><p class="card-text">' + price + '</p>' + '</div></div></div>';
+    return elt;
+}
 
 $("document").ready(function() {
     console.log("COUCOU");
@@ -27,12 +32,12 @@ $("document").ready(function() {
     let boissons = init_tab(15, "boisson");
 
     console.log(menus);
-    constr_grille(menus, "menu");
+    constr_grille(menus, "menu.png");
 
     $("#nav-menus").click(function() {
         $("#grille").fadeOut("slow", function() {
             $("#grille").empty();
-            constr_grille(menus, "menu");
+            constr_grille(menus, "menu.png");
             $("#grille").fadeIn("slow");
         });
     });
@@ -40,7 +45,7 @@ $("document").ready(function() {
     $("#nav-entrees").click(function() {
         $("#grille").fadeOut("slow", function() {
             $("#grille").empty();
-            constr_grille(entrees, "entrees");
+            constr_grille(entrees, "entree.png");
             $("#grille").fadeIn("slow");
         });
     });
@@ -48,7 +53,7 @@ $("document").ready(function() {
     $("#nav-boissons").click(function() {
         $("#grille").fadeOut("slow", function() {
             $("#grille").empty();
-            constr_grille(boissons, "boissons");
+            constr_grille(boissons, "boissons.png");
             $("#grille").fadeIn("slow");
         });
     });
@@ -56,7 +61,7 @@ $("document").ready(function() {
     $("#nav-pizzas").click(function() {
         $("#grille").fadeOut("slow", function() {
             $("#grille").empty();
-            constr_grille(pizzas, "pizza");
+            constr_grille(pizzas, "pizza2.jpeg");
             $("#grille").fadeIn("slow");
         });
     });
