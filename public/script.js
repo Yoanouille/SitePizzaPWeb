@@ -28,7 +28,7 @@ $("document").ready(function() {
 
     let menus = init_tab(5, "menu");
     let entrees = init_tab(20, "entree");
-    let pizzas = init_tab(10, "pizza");
+    //let pizzas = init_tab(10, "pizza");
     let boissons = init_tab(15, "boisson");
 
     console.log(menus);
@@ -60,9 +60,12 @@ $("document").ready(function() {
     
     $("#nav-pizzas").click(function() {
         $("#grille").fadeOut("slow", function() {
-            $("#grille").empty();
-            constr_grille(pizzas, "pizza2.jpeg");
-            $("#grille").fadeIn("slow");
+            $("#grille").empty();  
+            $.get("http://localhost:8080/pizza", {}, (data) => {
+                console.log(data);
+                constr_grille(data, data[0].imageURL);
+                $("#grille").fadeIn("slow");
+            });
         });
     });
 
