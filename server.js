@@ -12,19 +12,19 @@ server.get('/', (req, res) => {
 });
 
 server.get('/menus', (req, res) => {
-    res.json({content: data.genMenu()});
+    res.json(data.genMenu());
 });
 
-server.get('/entree', (req, res) => {
-    res.json({prix_choices: data.prix_sauces, content:data.genEntree()});
+server.get('/entrees', (req, res) => {
+    res.json(data.genEntree());
 });
 
-server.get('/boisson', (req, res) => {
-    res.json({choices: data.tailles_boisson, prix_choices: data.prix_tailles_boisson, content:data.genBoisson()});
+server.get('/boissons', (req, res) => {
+    res.json(data.genBoisson());
 });
 
-server.get('/pizza', (req, res) => {
-    res.json({choices: data.tailles_pizza, prix_choices: data.prix_tailles_pizza, content:data.genPizza()});
+server.get('/pizzas', (req, res) => {
+    res.json(data.genPizza());
 });
 
 server.listen(port, function() {
