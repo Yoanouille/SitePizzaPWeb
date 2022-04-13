@@ -1,0 +1,101 @@
+img {
+    display: inline-block;
+    vertical-align: middle;
+    float: none;
+    max-width: 100%;
+    aspect-ratio: 1.5;
+}
+
+.img-hover  {
+    -webkit-transition: all .3s ease; /* Safari and Chrome */
+    -moz-transition: all .3s ease; /* Firefox */
+    -o-transition: all .3s ease; /* IE 9 */
+    -ms-transition: all .3s ease; /* Opera */
+    transition: all .3s ease;
+    position:relative;
+}
+.img-hover:hover {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform:translateZ(0) scale(1.10); /* Safari and Chrome */
+    -moz-transform:scale(1.10); /* Firefox */
+    -ms-transform:scale(1.10); /* IE 9 */
+    -o-transform:translatZ(0) scale(1.10); /* Opera */
+    transform:translatZ(0) scale(1.10);
+}
+
+.img-hover:hover:after {
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    z-index:2;
+    width:30px;
+    height:30px;
+}
+
+.case {
+    border: solid black 2px;
+}
+
+#block1 {
+    margin-top: 50px;
+}
+
+#stepProgressBar {
+    counter-reset: step;
+    z-index: 2;
+}
+
+#stepProgressBar li{
+    list-style: none;
+    float: left;
+    width: 30%;
+    position: relative;
+    text-align: center;
+    z-index: 2;
+}
+
+#stepProgressBar li::after {
+    content: counter(step);
+    counter-increment: step;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    border: 2px solid #ddd;
+    display: block;
+    margin: 0 auto;
+    margin-top: 10px;
+    border-radius: 50%;
+    background-color: white;
+    z-index: 2;
+
+}
+
+#stepProgressBar li::before {
+    content: '';
+    position: absolute;
+    bottom: 13px;
+    right: -50%;
+    border: 2px solid black;
+    width: 100%;
+    z-index: -1;
+}
+
+#stepProgressBar li:last-child::before {
+    content: none;
+}
+
+.card.hidden {
+    display: none;
+}
+
+.progress {
+    position: relative;
+}
+
+#bar {
+    height: 32px;
+    position: absolute;
+    left: 0%;
+}
