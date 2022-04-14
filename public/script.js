@@ -119,4 +119,17 @@ $("document").ready(function() {
         });
     });
 
+    $("#test").click(function(){
+        $("#bar").animate({
+            left: "+=33.33%",
+        }, 1000);
+        $("#barText").animate({
+            opacity: 0,
+        }, 500, function(){
+            $("#barText").text("Ingredients").animate({
+                opacity: 1,
+            }, 500);
+        });
+    });
+
 });
