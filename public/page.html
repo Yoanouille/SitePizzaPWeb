@@ -25,11 +25,11 @@
             .img-hover:hover {
                 -webkit-backface-visibility: hidden;
                 backface-visibility: hidden;
-                -webkit-transform:translateZ(0) scale(1.10); /* Safari and Chrome */
-                -moz-transform:scale(1.10); /* Firefox */
-                -ms-transform:scale(1.10); /* IE 9 */
-                -o-transform:translatZ(0) scale(1.10); /* Opera */
-                transform:translatZ(0) scale(1.10);
+                -webkit-transform:translateZ(0) scale(1.05); /* Safari and Chrome */
+                -moz-transform:scale(1.05); /* Firefox */
+                -ms-transform:scale(1.05); /* IE 9 */
+                -o-transform:translatZ(0) scale(1.05); /* Opera */
+                transform:translatZ(0) scale(1.05);
             }
 
             .img-hover:hover:after {
@@ -50,7 +50,7 @@
                 margin-top: 50px;
             }
 
-            #panier > ul {
+            #panier {
                 font-size:90%;
             }
         </style>
@@ -75,37 +75,16 @@
 
         <div class="container-fluid" id="block1">
             <div class="row">
-              <div id="panier" class="col-sm-2">
-                <ul class="list-group">
-                    <li class="list-group-item text-center"><h4>Panier</h4></li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center"><div> Salade César
-                        <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="sauce ketchup"></i></div><div><span class="badge badge-secondary">5€</span> <span class="badge badge-primary badge-pill badge-success">2</span></div></li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center"><div>Pizza Margherita <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="Large"></i></div>
-                        <div><span class="badge badge-secondary">8€</span> <span class="badge badge-primary badge-pill badge-success">2</span></div></li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center"><div>Coca Cola light <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="33cl"></i></div><div><span class="badge badge-secondary">2€</span> <span class="badge badge-primary badge-pill badge-success">1</span></div></li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle bg-light text-dark" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              Menu XXL
-                            </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                              <div class="dropdown-item">Salade César <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="sauce ketchup"></i></div>
-                              <div class="dropdown-item">Pizza Calzone <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="XLarge"></i> <span class="badge badge-primary badge-pill badge-success">2</span></div>
-                              <div class="dropdown-item">Coca Cola  <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="50cl"></i></div>
-                            </div>
-                          </div>
-                        <div><span class="badge badge-secondary">15€</span></div>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center"><div>Coca Cola light <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="33cl"></i></div><div><span class="badge badge-secondary">2€</span> <span class="badge badge-primary badge-pill badge-success">1</span></div></li>
-                  </ul>
-              </div>
-              <div class="col-sm-10 mt-4 card-deck">
-                <div id="grille" class="row">
-
+                <div id="panierContainer" class="col-sm-2">
+                
                 </div>
-              </div>
+                <div class="col-sm-10 mt-4 card-deck">
+                    <div id="grille" class="row">
+
+                    </div>
+                </div>
             </div>
-          </div>
+        </div>
         <script src="jquery.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>

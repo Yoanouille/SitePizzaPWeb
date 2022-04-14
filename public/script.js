@@ -1,3 +1,24 @@
+let panier = [];
+
+function gen_panier(){
+    let p =
+     '<ul id="panier" class="list-group shadow-sm">'
+    +'<li class="list-group-item text-center"><h4>Panier</h4></li>';
+        let totalPrice = 0;
+        for(let elt of panier){
+            totalPrice += elt.price;
+            p +=
+             '<li class="list-group-item d-flex justify-content-between align-items-center">'
+            +   '<div>'+elt.name+' <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="'+elt.choice+'"></i></div>'
+            +   '<div><span class="badge badge-secondary">'+elt.price+'€</span> <span class="badge badge-primary badge-pill badge-success">1</span></div>'
+            +'</li>';
+        }
+    p +=
+    '<li class="list-group-item d-flex justify-content-between align-items-center"><button type="button" class="btn btn-success">Commander</button><span class="badge badge-secondary">Total: '+totalPrice+'€</span></li>'
+    +'</ul>';
+    return $(p);
+}
+
 function init_tab(n, str) {
     let tab = [];
     for(let i = 0; i < n; i++) {
@@ -47,20 +68,29 @@ function gen_presentation(image, name, price, prices, choices){
             }
         }
     });
+    el.find("button").click(function(){    
+        let choice = el.find("select").val();
+        let p = 0;
+        if(multipleChoices){
+            for(let i = 0; i < choices.length; i++){
+                if(choices[i] == choice){
+                    p = price + prices[i];
+                    break;
+                }
+            } 
+        } else {
+            p = price;
+        }
+   
+        panier.push({name: name, price: p, choice: choice});
+        console.log(panier);
+        $("#panierContainer").html(gen_panier());
+        $("[data-toggle=tooltip]").tooltip();
+    });
     return el;
-    
-    /*'<div class="col-sm-4 col-lg-3">'+
-    '<div class="card mb-4 shadow-sm img-hover">'+
-      '<img src="pizza2.jpeg" class="img-fluid" alt="Responsive image">'+
-      '<div class="card-body">'+
-        '<h4>Neuroevolution of Simulated Creatures</h3>'+
-        '<p class="card-text">A neural network learns to control a simulated creature using a genetic algorithm</p>'+
-        '<div class="d-flex justify-content-between align-items-center">'+
-        '</div></div></div></div>';*/
 }
 
 $("document").ready(function() {
-    $("[data-toggle=tooltip]").tooltip();
 
     // let menus = init_tab(5, "menu");
     // let entrees = init_tab(20, "entree");
