@@ -60,7 +60,7 @@ function gen_presentation(image, name, price, prices, choices){
 }
 
 $("document").ready(function() {
-    console.log("COUCOU");
+    $("[data-toggle=tooltip]").tooltip();
 
     // let menus = init_tab(5, "menu");
     // let entrees = init_tab(20, "entree");
