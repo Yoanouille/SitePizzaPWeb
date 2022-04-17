@@ -65,7 +65,7 @@ function gen_ingr_choice(ingr, ingr_image) {
     for(let i = 0; i < ingr.length; i++) {
         div += "<div class='col-sm-6 col-md-4 col-lg-2 col-6'><div class='card img-hover choice choice-ingr'>";
         div += "<img class='card-img-top' src='" + ingr_image[i] + "' alt='medium'></img>";
-        div += "<div class='card-body'>" + "<p class='prix-ingr'>Gratuit</p>" + "</div>";
+        div += "<div class='card-body elt'>" + "<p class='prix-ingr'>Gratuit</p>" + "</div>";
         div += "<div class='btn-group btn-group-justified' role='group'>"
 
         div += "<button type='button' class='btn btn-success add-elt'>+</button>"
@@ -163,13 +163,29 @@ $("document").ready(function() {
     gen_valid_choice();
     gen_footer_choice();
 
+    $("#perso").hide();
+
     $("#ingr").hide();
     $("#valid").hide();
 
-    $("#nav-menus").click(get_data("menus"));
-    $("#nav-entrees").click(get_data("entrees"));
-    $("#nav-boissons").click(get_data("boissons"));
-    $("#nav-pizzas").click(get_data("pizzas"));
+    $("#nav-menus").click(function() {
+        get_data("menus");
+    });
+    $("#nav-entrees").click(function() {
+        get_data("entrees");
+    });
+    $("#nav-boissons").click(function() {
+        get_data("boissons");
+    });
+    $("#nav-pizzas").click(function() {
+        get_data("pizzas");
+    });
+
+    $("#nav-perso").click(function() {
+        $("#grille").fadeOut("slow", function() {
+            $("#perso").fadeIn("slow");
+        });
+    });
 
     $(".choice-taille").click(function() {
         taille_selected = true;
@@ -179,22 +195,6 @@ $("document").ready(function() {
         update_price(nb_ingr_selected, prix_ingr);
         
     });
-
-    // $(".choice-ingr").click(function() {
-    //     if($(this).find("span").length == 0) {
-    //         $(this).find(".card-body").append("<span class='badge badge-primary badge-pill'>1</span><button type='button' class='btn btn-danger remove-elt'><p style='font-weight: bold; display: inline; z-index=5;'>-</p></button>")
-    //         $(this).addClass("active");
-    //     } else {
-    //         let nb = parseInt($(this).find("span").text());
-    //         nb += 1
-    //         $(this).find("span").text(nb);
-    //     }
-    //     nb_ingr_selected ++;
-    //     if(nb_ingr_selected == 3) {
-    //         $(".prix-ingr").text(prix_ingr + "€");
-    //     }
-    //     update_price(nb_ingr_selected, prix_ingr);
-    // });
 
     $(".add-elt").click(function() {
         let elt = $(this).parent().find(".count");
@@ -250,7 +250,5 @@ $("document").ready(function() {
             $("#next").removeClass("disabled");
         }
     });
-
-
 
 });

@@ -112,7 +112,7 @@ img {
     background-color: green;
 }
 
-.card-body {
+.card-body.elt {
     display: flex;
     justify-content: center;
     align-content: center;
