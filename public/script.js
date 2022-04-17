@@ -6,11 +6,15 @@ function gen_panier(){
     +'<li class="list-group-item text-center"><h4>Panier</h4></li>';
         let totalPrice = 0;
         for(let elt of panier){
-            totalPrice += elt.price;
+            totalPrice += elt.price*elt.number;
             p +=
              '<li class="list-group-item d-flex justify-content-between align-items-center">'
-            +   '<div>'+elt.name+' <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="'+elt.choice+'"></i></div>'
-            +   '<div><span class="badge badge-secondary">'+elt.price+'€</span> <span class="badge badge-primary badge-pill badge-success">1</span></div>'
+            +   '<div>'+elt.name;
+            if(elt.choice !== undefined){
+                p+=' <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="'+elt.choice+'"></i>'
+            }
+            p +=
+                '</div><div><span class="badge badge-secondary">'+elt.price+'€</span> <span class="badge badge-primary badge-pill badge-success">'+elt.number+'</span></div>'
             +'</li>';
         }
     p +=
@@ -30,26 +34,27 @@ function init_tab(n, str) {
 
 function constr_grille(tab) {
     for (let i = 0; i < tab.length; i++) {
-        let el = gen_presentation(tab[i].imageURL, tab[i].nom, tab[i].price,tab[i].prices_choices, tab[i].choices);
+        let el = gen_presentation(tab[i]);
         //let el = gen_presentation(images, tab[i], "6€");
         $("#grille").append(el);
     }    
 }
 
-function gen_presentation(image, name, price, prices, choices){
-    let multipleChoices = choices !== undefined;
-    let first_price = price;
-    if(multipleChoices) first_price += prices[0];
+function gen_presentation(e){
+    let multipleChoices = e.choices !== undefined;
+    let first_price = e.price;
+    if(multipleChoices) first_price += e.prices_choices[0];
     let elt =
      '<div class="col-sm-6 col-md-4 col-lg-3">'
     +   '<div class="card mb-4 shadow-sm img-hover">'
-    +       '<img src="'+image+'" class="card-img-top" alt="image de '+name+'">'
+    +       '<img src="'+e.imageURL+'" class="card-img-top" alt="image de '+e.nom+'">'
     +       '<div class="card-body">'
-    +       '<h5 class="card-title">'+name+'</h5>'
+    +       '<h5 class="card-title">'+e.nom+'</h5>'
+    +       '<p>jambon, champignon</p>'
     +       '<p id="price" class="card-text">' + (first_price) + '€</p>';
             if(multipleChoices){
                elt +='<select class="form-select mb-4" aria-label="Default select example" style="width: 100%;">'
-                    for(let c of choices){
+                    for(let c of e.choices){
                         elt += '<option>'+c+'</option>';
                     }
                 elt +='</select>';
@@ -60,10 +65,10 @@ function gen_presentation(image, name, price, prices, choices){
     +'</div>';
     
     let el = $(elt);
-    el.find("select").change(function(){        
-        for(let i = 0; i < choices.length; i++){
-            if(choices[i] == $(this).val()){
-                el.find("#price").text((price + prices[i]) + "€");
+    el.find("select").change(function(){
+        for(let i = 0; i < e.choices.length; i++){
+            if(e.choices[i] == $(this).val()){
+                el.find("#price").text((e.price + e.prices_choices[i]) + "€");
                 break;
             }
         }
@@ -72,25 +77,43 @@ function gen_presentation(image, name, price, prices, choices){
         let choice = el.find("select").val();
         let p = 0;
         if(multipleChoices){
-            for(let i = 0; i < choices.length; i++){
-                if(choices[i] == choice){
-                    p = price + prices[i];
+            for(let i = 0; i < e.choices.length; i++){
+                if(e.choices[i] == choice){
+                    p = e.price + e.prices_choices[i]
                     break;
                 }
             } 
         } else {
-            p = price;
+            p = e.price;
         }
-   
-        panier.push({name: name, price: p, choice: choice});
+        let o = {name: e.nom, price: p, choice: choice, number:1};
+        let added = false;
+        for(let elt of panier){
+            if(elt.name === o.name && elt.choice === o.choice){
+                elt.number++;
+                added = true;
+                break;
+            }
+        }
+        if(!added){
+            panier.push(o);
+        }
         console.log(panier);
         $("#panierContainer").html(gen_panier());
         $("[data-toggle=tooltip]").tooltip();
+        $("#grilleContainer").removeClass("col-sm-12").addClass("col-sm-8 col-lg-9");
+        $("#panierContainer").show();
+        /*$("#panier").css("width: 0px;");
+        $("#panier").animate({
+            width: "300px"
+        }, 1000);*/
     });
     return el;
 }
 
 $("document").ready(function() {
+
+    $("#panierContainer").hide();
 
     // let menus = init_tab(5, "menu");
     // let entrees = init_tab(20, "entree");
