@@ -99,3 +99,26 @@ img {
     position: absolute;
     left: 0%;
 }
+
+.choice-taille {
+    background-color: white;
+}
+
+.choice:hover {
+    background-color: blue;
+}
+
+.choice.active {
+    background-color: green;
+}
+
+.card-body {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+}
+
+span {
+    margin: 0 auto;
+}
