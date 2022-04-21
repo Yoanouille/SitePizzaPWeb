@@ -96,7 +96,7 @@ function Menu(nom,nb_entree, tailles_pizza, nb_pizza, tailles_boisson, nb_boisso
 function genEntree() {
     let entrees = [];
     for(let i = 0; i < 15; i++) {
-        entrees.push(new Entree("Entree " + i, ["Aucune", "Ketchup", "Moutarde"],'entree2.JPG',10));
+        entrees.push(new Entree("Entree " + i, ["Aucune", "Ketchup", "Moutarde"],'images/entree2.JPG',10));
     }
     return entrees;
 }
@@ -104,8 +104,8 @@ function genEntree() {
 function genPizza() {
     let pizzas = [];
     for(let i = 0; i < 12; i++) {
-        if(i != 5) pizzas.push(new Pizza("Pizza " + i, ["Jambon", "Champignons"], 'pizza2.jpeg'));
-        else pizzas.push(new Pizza("Pizza Special", ["Jambon", "Champignons", "Oeufs", "Ognions", "Bacon", "Salades"], 'pizza.png'));
+        if(i != 5) pizzas.push(new Pizza("Pizza " + i, ["Jambon", "Champignons"], 'images/pizza2.jpeg'));
+        else pizzas.push(new Pizza("Pizza Special", ["Jambon", "Champignons", "Oeufs", "Ognions", "Bacon", "Salades"], 'images/pizza.png'));
     }
     return pizzas;
 }
@@ -113,17 +113,17 @@ function genPizza() {
 function genBoisson() {
     let boissons = [];
     for(let i = 0; i < 6; i++) {
-        if(i != 4) boissons.push(new Boisson("Coca Cola " + i, 5, ["25cL", "33cL"], 'coca.jpg'));
-        else boissons.push(new Boisson("Boisson Special", 5, ["33cL"], 'boissons.png'));
+        if(i != 4) boissons.push(new Boisson("Coca Cola " + i, 5, ["25cL", "33cL"], 'images/coca.jpg'));
+        else boissons.push(new Boisson("Boisson Special", 5, ["33cL"], 'images/boissons.png'));
     }
     return boissons;
 }
 
 function genMenu() {
     let menus = [
-        new Menu("Small Menu",1, ["Medium"], 1, ["25cL"], 1, 'menu.png', 30),
-        new Menu("Medium Menu",2, ["Medium", "Large"], 2, ["25cL","33cL"], 2, 'Menu2.png', 45),
-        new Menu("Big Menu",3, ["Medium", "Large", "XLarge"], 3, ["25cL","33cL","1L"], 3, 'menu.png', 60),
+        new Menu("Small Menu",1, ["Medium"], 1, ["25cL"], 1, 'images/menu.png', 30),
+        new Menu("Medium Menu",2, ["Medium", "Large"], 2, ["25cL","33cL"], 2, 'images/Menu2.png', 45),
+        new Menu("Big Menu",3, ["Medium", "Large", "XLarge"], 3, ["25cL","33cL","1L"], 3, 'images/menu.png', 60),
     ];
     return menus;
 }
