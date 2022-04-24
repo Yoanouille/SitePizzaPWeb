@@ -72,16 +72,16 @@ function init_tab(n, str) {
     return tab;
 }
 
-function constr_grille(tab) {
+function constr_grille(tab, type) {
     for (let i = 0; i < tab.length; i++) {
         tab[i].description = "jambonne, champignonne";
-        let el = gen_presentation(tab[i]);
+        let el = gen_presentation(tab[i], type);
         //let el = gen_presentation(images, tab[i], "6€");
         $("#grille").append(el);
     }    
 }
 
-function gen_presentation(e){
+function gen_presentation(e, type){
     let multipleChoices = e.choices !== undefined;
     let first_price = e.price;
     if(multipleChoices) first_price += e.prices_choices[0];
@@ -100,8 +100,9 @@ function gen_presentation(e){
                     }
                 elt +='</select>';
             }
-    elt +=         '<button type="button" class="btn btn-success" style="width: 100%;">Ajouter au panier</button>'
-    +       '</div>'
+    elt +=         '<button type="button" class="btn btn-success ajout" style="width: 100%;">Ajouter au panier</button>';
+    if(type === 'pizzas') elt += '<button type="button" class="btn btn-succes personal" style="width:100%;">Personnaliser</button>';
+    elt +=  '</div>'
     +   '</div>'
     +'</div>';
     
@@ -114,7 +115,7 @@ function gen_presentation(e){
             }
         }
     });
-    el.find("button").click(function(){    
+    el.find(".ajout").click(function(){    
         let choice = el.find("select").val();
         let p = 0;
         if(multipleChoices){
@@ -132,7 +133,7 @@ function gen_presentation(e){
             let o = {name: e.nom, price: p, menu: false, choice: choice, number:1};
             let added = false;
             for(let elt of panier){
-                if(elt.name === o.name && elt.choice === o.choice){
+                if(elt.name !== "Pizza Personnalisée" && elt.name === o.name && elt.choice === o.choice){
                     elt.number++;
                     added = true;
                     break;
@@ -156,39 +157,74 @@ function gen_presentation(e){
             width: "300px"
         }, 1000);*/
     });
+
+    if(type === "pizzas") {
+        el.find(".personal").click(function() {
+            let taille = el.find("select").val();
+            $.get("http://localhost:8080/pizza-ingr", {pizza:e.nom}, (ingr) => {
+                console.log(ingr);
+                init_perso(taille, new Map(ingr));
+            });
+        });
+    }
+
     return el;
 }
 
-function gen_taille_choice(taille, taille_image, taille_prix) {
+function gen_bar_choice() {
+    let persoContainer = $("#persoContainer");
+
+    let card = '<div class="card" id="perso">'
+                +  '<div class="card-header">'
+                +      '<div class="progress" style="height: 32px">'
+                +         '<div class="progress-bar progress-bar-striped progress-bar-animated" id="bar" role="progressbar" style="width: 33.33%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"><span id="barText">Taille</span></div>'
+                +      '</div>'
+                +  ' </div>'
+                + '</div>';
+
+    persoContainer.append(card);
+    
+    
+}
+
+function gen_taille_choice(taille, taille_select) {
     let perso = $("#perso");
 
     let div = "<div class='card-body' id='taille'>" +
                 "<div class='row'>";
     for(let i = 0; i < taille.length; i++) {
-        div += "<div class='card img-hover choice choice-taille col-4'  prix='" + taille_prix[i] + "'>";
-        div += "<img class='card-img-top' src='" + taille_image[i] + "' alt='medium'></img>";
-        div += "<div class='card-body'>" + "" + "</div>";
-        div += "</div>";
+        div += "<div class='col-4'>"
+        div += "<div class='card img-hover choice choice-taille " 
+        + (taille_select !== undefined && taille_select === taille[i].nom ? "active" : "") 
+        + " mb-4'  prix='" + taille[i].prix + "' nom='" + taille[i].nom + "'>";
+        div += "<img class='card-img-top' src='" + taille[i].image_url + "' alt='medium'></img>";
+        div += "<div class='card-body'><h5 class='card-title text-center'>" + taille[i].nom + "</h5></div>";
+        div += "</div></div>";
     }
 
     div += "</div></div>";
     perso.append(div);
 }
 
-function gen_ingr_choice(ingr, ingr_image) {
+function gen_ingr_choice(ingr, ingr_select) {
     let perso = $("#perso");
 
     let div = "<div class='card-body' id='ingr'>" +
                 "<div class='row'>";
     for(let i = 0; i < ingr.length; i++) {
-        div += "<div class='col-sm-6 col-md-4 col-lg-2 col-6'><div class='card img-hover choice choice-ingr'>";
-        div += "<img class='card-img-top' src='" + ingr_image[i] + "' alt='medium'></img>";
-        div += "<div class='card-body elt'>" + "<p class='prix-ingr'>Gratuit</p>" + "</div>";
+        div += "<div class='col-sm-6 col-md-6 col-lg-3 col-12'><div class='card choice choice-ingr img-hover'>";
+        div += "<img class='card-img-top' src='" + ingr[i].image_url + "' alt='medium'></img>";
+        div += "<div class='card-body elt'>" + "<p class='nom-ingr'>" + ingr[i].nom + "</p>" + "<p class='prix-ingr'>Gratuit</p>" + "</div>";
         div += "<div class='btn-group btn-group-justified' role='group'>"
 
         div += "<button type='button' class='btn btn-success add-elt'>+</button>"
         //div += "<div style='width=100%'>" + 0 + "</div>"
-        div += "<button type='button' class='btn count'>0</button>"
+        let nb = 0;
+        if(ingr_select !== undefined) {
+            nb = ingr_select.get(ingr[i].nom);
+            if(nb === undefined) nb = 0;
+        }
+        div += "<button type='button' class='btn count'>" + nb +"</button>"
         div += "<button type='button' class='btn btn-danger remove-elt'>-</button>"
         div += "</div>";
         div += "</div></div>";
@@ -203,9 +239,37 @@ function gen_valid_choice() {
     let perso = $("#perso");
 
     let div = "<div class='card-body text-center' id='valid'>";
+    div += "<div id='recap'></div>"
     div += "<button type='button' id='valid-button' class='btn btn-primary'>Valider</button>" + "</div>";
 
     perso.append(div);
+
+    $("#valid-button").click(function() {
+        if(nb_ingr_selected > 0) {
+            let prix_pizza = parseInt($(".choice-taille.active").attr("prix"));
+            let prix_ingr_tot = Math.max((nb_ingr_selected - 3) * prix_ingr,0);
+            let prix = prix_pizza + prix_ingr_tot;
+
+            let ingr = "";
+            for(elt of ingr_selected) {
+                ingr += elt[1] + " " + elt[0] + ", ";
+            }
+            ingr = ingr.substring(0, ingr.length - 2);
+
+            let o = {name: "Pizza Personnalisée", price: prix, menu: false, choice: $(".choice-taille.active").attr("nom") + " + " + ingr,taille: $(".choice-taille.active").attr("nom"), ingr: Array.from(ingr_selected), number:1};
+            panier.push(o);
+            
+            $("#panierContainer").html(gen_panier());
+            $("[data-toggle=tooltip]").tooltip();
+            $("#grilleContainer").removeClass("col-sm-12").addClass("col-sm-8 col-lg-9");
+            $("#panierContainer").show();
+
+            $("#perso").fadeOut("slow", function() {
+                current_block = $("#grille");
+                $("#grille").fadeIn("slow");
+            });
+        }
+    });
 }
 
 function gen_footer_choice() {
@@ -232,12 +296,20 @@ function moveBar(dir, s) {
     });
 }
 
-function get_data(type) {
-    $("#grille").fadeOut("slow", function() {
-        $("#grille").empty();
-        $.get("http://localhost:8080/" + type, {}, (data) => {
+let current_block = $("#grille");
+let taille_selected = false;
+let nb_ingr_selected = 0;
+let prix_ingr = 1.5;
+let ingr_selected = new Map();
+
+function get_data_and_switch(type) {
+    $.get("http://localhost:8080/" + type, {}, (data) => {
+        current_block.fadeOut("slow", function() {
+            current_block = $("#grille");
+            $("#grille").empty();
             console.log(data);
-            constr_grille(data);
+            constr_grille(data, type);
+
             $("#grille").fadeIn("slow");
         });
     });
@@ -257,54 +329,7 @@ function update_price(nb_ingr, prix_ingr) {
     $('#prix-perso').text("Prix : " + prix + "€");
 }
 
-$("document").ready(function() {
-    console.log("COUCOU");
-    $.get("http://localhost:8080/menus", {}, (data) => {
-        console.log(data);
-        constr_grille(data);
-        for(let d of data) d.menu = true;
-        $("#grille").fadeIn("slow");
-    });
-
-    let taille_selected = false;
-    let nb_ingr_selected = 0;
-
-    let taille = ["Medium", "Large", "XLarge"];
-    let taille_image = ["images/test.png", "images/large.png", "images/Xlarge.png"];
-    let tailles_prix  = [20, 30, 40];
-
-    let ingredients = ["Jambon", "Bacon","Champignons", "Ognions", "Salades", "Oeufs"];
-    let ingredients_image = ["images/coca.jpg", "images/menu.png", "images/plat.png", "images/pizza.png", "images/entree.png", "images/entree2.JPG"];
-    let prix_ingr = 1.5;
-
-    gen_taille_choice(taille, taille_image, tailles_prix);
-    gen_ingr_choice(ingredients, ingredients_image);
-    gen_valid_choice();
-    gen_footer_choice();
-
-    $("#persoContainer").hide();
-    $("#ingr").hide();
-    $("#valid").hide();
-
-    $("#nav-menus").click(function() {
-        get_data("menus");
-    });
-    $("#nav-entrees").click(function() {
-        get_data("entrees");
-    });
-    $("#nav-boissons").click(function() {
-        get_data("boissons");
-    });
-    $("#nav-pizzas").click(function() {
-        get_data("pizzas");
-    });
-
-    $("#nav-perso").click(function() {
-        $("#grille").fadeOut("slow", function() {
-            $("#persoContainer").fadeIn("slow");
-        });
-    });
-
+function init_choice_taille_button() {
     $(".choice-taille").click(function() {
         taille_selected = true;
         $(".choice-taille").removeClass("active");
@@ -313,9 +338,16 @@ $("document").ready(function() {
         update_price(nb_ingr_selected, prix_ingr);
         
     });
+}
 
+function init_add_elt_button() {
     $(".add-elt").click(function() {
         let elt = $(this).parent().find(".count");
+        let ingr = $(this).parent().parent().find(".nom-ingr");
+        let n = ingr_selected.get(ingr.text());
+        if(n === undefined) ingr_selected.set(ingr.text(), 1);
+        else ingr_selected.set(ingr.text(), n + 1);
+        console.log(ingr_selected);
         nb_ingr_selected++;
         if(nb_ingr_selected == 3) {
             $(".prix-ingr").text(prix_ingr + "€");
@@ -327,11 +359,23 @@ $("document").ready(function() {
 
         update_price(nb_ingr_selected, prix_ingr);
     });
+}
 
+function init_rm_elt_button() {
     $(".remove-elt").click(function() {
         let elt = $(this).parent().find(".count");
+        let ingr = $(this).parent().parent().find(".nom-ingr");
+
         let nb = parseInt(elt.text());
         if(nb !== 0) {
+
+            let n = ingr_selected.get(ingr.text());
+            if(n === 1) {
+                ingr_selected.delete(ingr.text());
+            }
+            if(n !== undefined) ingr_selected.set(ingr.text(), n - 1);
+            console.log(ingr_selected);
+
             nb_ingr_selected--;
             if(nb_ingr_selected === 2) {
                 $(".prix-ingr").text("Gratuit");
@@ -341,7 +385,9 @@ $("document").ready(function() {
             update_price(nb_ingr_selected, prix_ingr);
         }
     }); 
+}
 
+function init_next_choice_button() {
     $("#next").click(function(){
         if(taille_selected) {
             if($("#bar").text() === "Taille") {
@@ -350,12 +396,21 @@ $("document").ready(function() {
                 switch_slide($("#taille"), $("#ingr"));
             } else if($("#bar").text() === "Ingrédients"){
                 moveBar("+=33.33%", "Validation"); 
+
+                div = "<p>" + $(".choice-taille.active").attr("nom") + "</p>";
+                for(elt of ingr_selected) {
+                    div += "<p>" + elt[1] + " x " + elt[0] + "</p>";
+                }
+
+                $("#recap").empty().append(div);
                 switch_slide($("#ingr"), $("#valid"));
                 $(this).addClass("disabled");
             }
         }
     });
+}
 
+function init_prev_choice_button() {
     $("#prev").click(function() {
         if($("#bar").text() === "Taille") return;
         if($("#bar").text() === "Ingrédients") {
@@ -368,5 +423,79 @@ $("document").ready(function() {
             $("#next").removeClass("disabled");
         }
     });
+}
 
+function init_perso(taille_select, ingr_select) {
+    $.get("http://localhost:8080/ingr", {}, (ingr) => {
+        $.get("http://localhost:8080/taille", {}, (taille) => {
+            $("#grille").fadeOut("slow", function() {
+                console.log(taille);
+                console.log(ingr);
+                current_block = $("#persoContainer");
+                taille_selected = (taille_select !== undefined);
+                nb_ingr_selected = 0;
+                if(ingr_select !== undefined) {
+                    for(elt of ingr_select) {
+                        nb_ingr_selected += elt[1];
+                    }
+                }
+                if(ingr_select === undefined) ingr_selected = new Map();
+                else ingr_selected = ingr_select;
+
+                console.log(taille_select);
+                console.log(ingr_select);
+
+                $("#persoContainer").empty();
+                gen_bar_choice();
+                gen_taille_choice(taille, taille_select);
+                gen_ingr_choice(ingr, ingr_select);
+                gen_valid_choice();
+                gen_footer_choice();
+
+                $("#ingr").hide();
+                $("#valid").hide();
+                
+                init_choice_taille_button();
+                init_add_elt_button();
+                init_rm_elt_button();
+                init_next_choice_button();
+                init_prev_choice_button();
+
+                update_price(nb_ingr_selected, prix_ingr);
+
+                $("#persoContainer").fadeIn("slow");
+            });
+        });
+    });
+}
+
+$("document").ready(function() {
+    console.log("COUCOU");
+
+    $.get("http://localhost:8080/menus", {}, (data) => {
+        console.log(data);
+        constr_grille(data);
+        for(let d of data) d.menu = true;
+        $("#grille").fadeIn("slow");
+    });
+
+    
+    $("#persoContainer").hide();
+
+    $("#nav-menus").click(function() {
+        get_data_and_switch("menus");
+    });
+    $("#nav-entrees").click(function() {
+        get_data_and_switch("entrees");
+    });
+    $("#nav-boissons").click(function() {
+        get_data_and_switch("boissons");
+    });
+    $("#nav-pizzas").click(function() {
+        get_data_and_switch("pizzas");
+    });
+
+    $("#nav-perso").click(function() {
+        init_perso();
+    }); 
 });
