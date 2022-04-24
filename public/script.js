@@ -72,16 +72,16 @@ function init_tab(n, str) {
     return tab;
 }
 
-function constr_grille(tab) {
+function constr_grille(tab, menu) {
     for (let i = 0; i < tab.length; i++) {
         tab[i].description = "jambonne, champignonne";
-        let el = gen_presentation(tab[i]);
+        let el = gen_presentation(tab[i], menu);
         //let el = gen_presentation(images, tab[i], "6€");
         $("#grille").append(el);
     }    
 }
 
-function gen_presentation(e){
+function gen_presentation(e, menu){
     let multipleChoices = e.choices !== undefined;
     let first_price = e.price;
     if(multipleChoices) first_price += e.prices_choices[0];
@@ -100,7 +100,7 @@ function gen_presentation(e){
                     }
                 elt +='</select>';
             }
-    elt +=         '<button type="button" class="btn btn-success" style="width: 100%;">Ajouter au panier</button>'
+    elt +=         '<button type="button" class="btn btn-success" style="width: 100%;">'+(menu === undefined ? (e.menu?'Composer menu':'Ajouter au panier'):'choisir')+'</button>'
     +       '</div>'
     +   '</div>'
     +'</div>';
@@ -114,7 +114,7 @@ function gen_presentation(e){
             }
         }
     });
-    el.find("button").click(function(){    
+    el.find("button").click(function(){
         let choice = el.find("select").val();
         let p = 0;
         if(multipleChoices){
@@ -127,11 +127,41 @@ function gen_presentation(e){
         } else {
             p = e.price;
         }
-        
-        if(e.menu !== true){
-            let o = {name: e.nom, price: p, menu: false, choice: choice, number:1};
+
+        if(menu === undefined){
+            if(!e.menu){
+                let o = {name: e.nom, price: p, menu: false, choice: choice, number:1};
+                let added = false;
+                for(let elt of panier){
+                    if(elt.name === o.name && elt.choice === o.choice){
+                        elt.number++;
+                        added = true;
+                        break;
+                    }
+                }
+                if(!added){
+                    panier.push(o);
+                }
+                console.log(panier);
+                $("#panierContainer").html(gen_panier());
+                $("[data-toggle=tooltip]").tooltip();
+                $("#grilleContainer").removeClass("col-sm-12").addClass("col-sm-8 col-lg-9");
+                //$("#persoContainer").removeClass("col-sm-12").addClass("col-sm-8 col-lg-9");
+                $("#panierContainer").show();
+                /*$("#panier").css("width: 0px;");
+                $("#panier").animate({
+                    width: "300px"
+                }, 1000);*/
+            } else {
+                let menu = {name: e.nom, price: p, menu: true, elts: [], number:1, format:e, step:"entrees", number: 0};
+                console.log(e);
+                get_data("entrees", menu);
+                $("#menuContainer").slideDown("slow");
+            }
+        } else {
+            let o = {name: e.nom, price: p, choice: choice, number:1};
             let added = false;
-            for(let elt of panier){
+            for(let elt of menu.elts){
                 if(elt.name === o.name && elt.choice === o.choice){
                     elt.number++;
                     added = true;
@@ -139,22 +169,35 @@ function gen_presentation(e){
                 }
             }
             if(!added){
-                panier.push(o);
+                menu.elts.push(o);
             }
-        } else {
-            panier.push({name: e.nom, price: p, menu: true, elts: [{name: "Salade César", price: 6, number: 2}, {name: "Pizza Calzone", price: 12, choice:"XLarge", number: 2}], number:1});
-        }
+            switch(menu.step){
+                case "entrees":
+                    menu.number++;
+                    menu.step = "pizzas";
+                    get_data("pizzas", menu);
+                    moveMenuBar("+=33.33%", "Pizzas");
+                    break;
+                case "pizzas":
+                    menu.step = "boissons";
+                    get_data("boissons", menu);
+                    moveMenuBar("+=33.33%", "Boissons");
+                    break;
+                case "boissons":
+                    $("#menuContainer").fadeOut("slow", function(){
+                        moveMenuBar("0%", "Entrées");
+                    });
+                    
+                    
+                    panier.push(menu);
+                    $("#panierContainer").html(gen_panier());
+                    $("[data-toggle=tooltip]").tooltip();
+                    $("#grilleContainer").removeClass("col-sm-12").addClass("col-sm-8 col-lg-9");
+                    $("#panierContainer").show();
+                    get_data("menus");
 
-        console.log(panier);
-        $("#panierContainer").html(gen_panier());
-        $("[data-toggle=tooltip]").tooltip();
-        $("#grilleContainer").removeClass("col-sm-12").addClass("col-sm-8 col-lg-9");
-        //$("#persoContainer").removeClass("col-sm-12").addClass("col-sm-8 col-lg-9");
-        $("#panierContainer").show();
-        /*$("#panier").css("width: 0px;");
-        $("#panier").animate({
-            width: "300px"
-        }, 1000);*/
+            }
+        }
     });
     return el;
 }
@@ -232,12 +275,49 @@ function moveBar(dir, s) {
     });
 }
 
-function get_data(type) {
+function moveMenuBar(dir, s) {
+    $("#menuBar").animate({
+        left: dir,
+    }, 1000);
+    $("#menuBarText").animate({
+        opacity: 0,
+    }, 500, function(){
+        $("#menuBarText").text(s).animate({
+            opacity: 1,
+        }, 500);
+    });
+}
+
+function get_data(type, menu) {
     $("#grille").fadeOut("slow", function() {
         $("#grille").empty();
         $.get("http://localhost:8080/" + type, {}, (data) => {
-            console.log(data);
-            constr_grille(data);
+            for(let d of data) d.menu = (type === "menus");
+            if(menu !== undefined){
+                if(type === "boissons"){
+                    for(let d of data){
+                        console.log(menu);
+                        for(let i = 0; i < d.choices.length; i++){
+                            if(!menu.format.tailles_boisson.includes(d.choices[i])){
+                                d.choices.splice(i, 1);
+                                i--;
+                            }
+                        }
+                    }
+                }
+                if(type === "pizzas"){
+                    for(let d of data){
+                        console.log(menu);
+                        for(let i = 0; i < d.choices.length; i++){
+                            if(!menu.format.tailles_pizza.includes(d.choices[i])){
+                                d.choices.splice(i, 1);
+                                i--;
+                            }
+                        }
+                    }
+                }
+            }
+            constr_grille(data, menu);
             $("#grille").fadeIn("slow");
         });
     });
@@ -261,8 +341,8 @@ $("document").ready(function() {
     console.log("COUCOU");
     $.get("http://localhost:8080/menus", {}, (data) => {
         console.log(data);
-        constr_grille(data);
         for(let d of data) d.menu = true;
+        constr_grille(data);
         $("#grille").fadeIn("slow");
     });
 
@@ -282,9 +362,13 @@ $("document").ready(function() {
     gen_valid_choice();
     gen_footer_choice();
 
+    $("#menuContainer").hide();
     $("#persoContainer").hide();
     $("#ingr").hide();
     $("#valid").hide();
+    $("#panierContainer").html(gen_panier());
+    $("#grilleContainer").removeClass("col-sm-12").addClass("col-sm-8 col-lg-9");
+    $("#panierContainer").show();
 
     $("#nav-menus").click(function() {
         get_data("menus");
@@ -364,7 +448,7 @@ $("document").ready(function() {
             $(this).addClass("disabled");
         } else {
             moveBar("-=33.33%", "Ingrédients");
-            switch_slide($("#valid"), $("#ingr")); 
+            switch_slide($("#valid"), $("#ingr"));
             $("#next").removeClass("disabled");
         }
     });
