@@ -39,7 +39,7 @@ function gen_menu(menu){
     }
     s+=      '</div>'
     +   '</div>'
-    +   '<div><span class="badge badge-secondary">15€</span></div>'
+    +   '<div><span class="badge badge-secondary">'+menu.price+'€</span></div>'
     +'</li>';
     return s;
 }
