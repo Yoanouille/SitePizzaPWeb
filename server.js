@@ -1,5 +1,7 @@
 const data = require('./data');
 
+data.getIngr();
+
 const express = require('express');
 const server = express();
 const port = 8080;
@@ -16,15 +18,28 @@ server.get('/menus', (req, res) => {
 });
 
 server.get('/entrees', (req, res) => {
-    res.json(data.genEntree());
+    data.getEntree().then(resul => {res.json(resul);}).catch(err => console.log(err.stack));
 });
 
 server.get('/boissons', (req, res) => {
-    res.json(data.genBoisson());
+    data.getBoisson().then(resul => {res.json(resul);}).catch(err => console.log(err.stack));
 });
 
 server.get('/pizzas', (req, res) => {
-    res.json(data.genPizza());
+    data.getPizza().then(resul => {res.json(resul);}).catch(err => console.log(err.stack));
+});
+
+server.get('/ingr', (req, res) => {
+    data.getIngr().then(resul => {res.json(resul);}).catch(err => console.log(err.stack));
+});
+
+server.get('/taille', (req, res) => {
+    data.getTaille().then(resul => {res.json(resul);}).catch(err => console.log(err.stack));
+});
+
+server.get('/pizza-ingr', (req, res) => {
+    console.log(req.query);
+    data.getIngr_Pizza(req.query.pizza).then(resul => {res.json(resul);}).catch(err => console.log(err.stack));
 });
 
 server.listen(port, function() {

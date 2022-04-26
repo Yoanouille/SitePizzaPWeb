@@ -1,85 +1,180 @@
-let prix_sauces = 2;
 let prix_ajout_ingredient = 1.5;
 
+const pg = require('pg');
+const pool = new pg.Pool({
+    user: 'alexandreleymarie',
+    host: 'localhost',
+    database: 'alexandreleymarie',
+    port: 5432
+});
 
-let tailles_pizza = ["Medium", "Large", "XLarge"];
-let prix_tailles_pizza  = [20, 30, 40];
+async function getIngr() {
+    const client = await pool.connect();
+    let res = await client.query ("SELECT nom_ingr as nom, image_url FROM INGRS");
+    client.release();
+    console.log(res.rows);
 
-let tailles_boisson = ["25cL", "33cL", "1L", "2L"];
-let prix_tailles_boisson = [2, 3, 9, 15];
+    return res.rows;
+}
 
-let ingredients = ["Jambon", "Bacon","Champignons", "Ognions", "Salades", "Oeufs"];
+async function getTaille() {
+    const client = await pool.connect();
+    let res = await client.query("SELECT nom_taille as nom, prix, image_url FROM TAILLES_PIZZA");
+    client.release();
+    
+    console.log(res.rows);
 
-function getPrixTaille(taille_dispo, tailles_prix, tailles) {
-    let prix = [];
-    for(let i = 0; i < taille_dispo.length; i++) {
-        for(let j = 0; j < tailles.length; j++) {
-            if(taille_dispo[i] == tailles[j]) {
-                prix.push(tailles_prix[j]);
+    return res.rows;
+}
+
+async function getEntree() {
+    const client = await pool.connect();
+    let res = await client.query ("SELECT nom_entree, prix_entree, image_url FROM ENTREES");
+    console.log(res.rows);
+
+    let entree = [];
+    for(let i = 0; i < res.rows.length; i++) {
+        entree.push(new Entree(res.rows[i].nom_entree, res.rows[i].image_url, res.rows[i].prix_entree));
+    }
+
+    res = await client.query ("SELECT nom_entree, nom_sauce, prix_sauce FROM ASS_ENT_SAU NATURAL JOIN SAUCES");
+    for(let i = 0; i < res.rows.length; i++) {
+        let elt = res.rows[i];
+        for(let j = 0; j < entree.length; j++) {
+            if(entree[j].nom === elt.nom_entree) {
+                entree[j].choices.push(elt.nom_sauce);
+                entree[j].prices_choices.push(elt.prix_sauce);
                 break;
             }
         }
     }
-    return prix;
+    client.release();
+
+    return entree;
 }
 
-function getPrixSauces(sauces) {
-    let prix = [0];
-    for(let i = 0; i < sauces.length; i++) {
-        prix.push(prix_sauces);
+
+async function getBoisson() {
+    const client = await pool.connect();
+    let res = await client.query("SELECT nom_boisson, image_url FROM BOISSONS");
+    console.log(res.rows);
+
+    let boisson = [];
+    for(let i = 0; i < res.rows.length; i++) {
+        boisson.push(new Boisson(res.rows[i].nom_boisson, res.rows[i].image_url));
     }
-    return prix;
-}
 
-function descrPizza(pizza) {
-    let res = "";
-    for(let i = 0; i < pizza.ingredients.length; i++) {
-        res +=  pizza.ingredients[i] + " ";
+    res = await client.query ("SELECT nom_boisson, taille, prix FROM BOI_TAI_PRI");
+    for(let i = 0; i < res.rows.length; i++) {
+        let elt = res.rows[i];
+        for(let j = 0; j < boisson.length; j++) {
+            if(boisson[j].nom === elt.nom_boisson) {
+                boisson[j].choices.push(elt.taille);
+                boisson[j].prices_choices.push(elt.prix);
+                break;
+            }
+        }
     }
-    return res;
+
+    client.release();
+    return boisson;
 }
 
-function descrMenu(menu) {
-    res = menu.nb_entree + " " +
-          menu.nb_pizza  + " " +
-          menu.nb_boisson + " ";
-    return res;
-}
- 
-function Element(nom, choices, price, price_choices, image) {
-    this.nom = nom;
-    this.choices = choices;
-    this.price = price;
-    this.prices_choices = price_choices;
-    this.imageURL = image;
+async function getPizza() {
+    const client = await pool.connect();
+
+    let res = await client.query("SELECT nom_taille, prix FROM TAILLES_PIZZA");
+    console.log(res.rows);
+
+    let taille = [];
+    let taille_prix = [];
+
+    for(let i = 0; i < res.rows.length; i++) {
+        let elt = res.rows[i];
+        taille.push(elt.nom_taille);
+        taille_prix.push(elt.prix);
+    }
+
+    //await new Promise(r => setTimeout(r, 2000));
+
+    res = await client.query("SELECT * FROM PIZZAS");
+    console.log(res.rows);
+
+
+    let pizza = [];
+    for(let i = 0; i < res.rows.length; i++) {
+        let elt = res.rows[i];
+        pizza.push(new Pizza(elt.nom_pizza, taille, taille_prix,elt.image_url));
+    } 
+
+    res = await client.query("SELECT * FROM ASS_PIZZ_ING");
+
+    for(let i = 0; i < res.rows.length; i++) {
+        let elt = res.rows[i];
+        for(let j = 0; j < pizza.length; j++) {
+            if(elt.nom_pizza == pizza[j].nom) {
+                pizza[j].ingredients.set(elt.nom_ingr, elt.quantite);
+                pizza[j].nb_ingr += elt.quantite;
+            } 
+        }
+    }
+
+    for(let i = 0; i < pizza.length; i++) {
+        pizza[i].price = pizza[i].nb_ingr > 3 ? (pizza[i].nb_ingr - 3) * prix_ajout_ingredient : 0;
+        pizza[i].ingredients = Array.from(pizza[i].ingredients);
+    } 
+
+    client.release();
+    console.log(pizza);
+    return pizza;    
 }
 
-function Entree(nom, sauces, imageURL, prix) {
+async function getIngr_Pizza(pizza) {
+    const client = await pool.connect();
+
+    let s = "SELECT nom_ingr, quantite FROM ASS_PIZZ_ING WHERE nom_pizza='" + pizza + "'";
+    console.log(s);
+    let res = await client.query("SELECT nom_ingr, quantite FROM ASS_PIZZ_ING WHERE nom_pizza='" + pizza + "'");
+    console.log(res.rows);
+
+    let map = new Map();
+    for(let i = 0; i < res.rows.length; i++) {
+        let elt = res.rows[i];
+        map.set(elt.nom_ingr, elt.quantite);
+    }
+
+    let rep = Array.from(map);
+    client.release();
+    
+    return rep;
+}
+
+function Entree(nom, imageURL, prix) {
     this.nom = nom;
-    this.choices = sauces;
+    this.choices = ["Aucune"];
     this.imageURL = imageURL;
     this.price = prix;
-    this.prices_choices = getPrixSauces(sauces);
+    this.prices_choices = [0];
 }
 
 
-function Pizza(nom, ingredients, imageURL) {
+function Pizza(nom, taille, taille_prix, imageURL) {
     this.nom = nom;
-    this.ingredients = ingredients;
-    this.choices = tailles_pizza;
+    this.ingredients = new Map();
+    this.choices = taille;
     this.imageURL = imageURL;
-    this.price = ingredients.length >= 3 ? prix_ajout_ingredient * (ingredients.length - 3) : 0;
-    this.prices_choices = prix_tailles_pizza;
+    this.price = 0
+    this.nb_ingr = 0;
+    this.prices_choices = taille_prix;
 
 }
 
-function Boisson(nom, prix, taille_dispo, image) {
+function Boisson(nom, image_url) {
     this.nom = nom;
-    this.price = prix;
-    this.choices = taille_dispo
-    this.prices_choices = getPrixTaille(taille_dispo, prix_tailles_boisson, tailles_boisson);
-    this.imageURL = image;
-
+    this.price = 0;
+    this.choices = [];
+    this.prices_choices = [];
+    this.imageURL = image_url;
 }
 
 function Menu(nom,nb_entree, tailles_pizza, nb_pizza, tailles_boisson, nb_boisson, image, prix) {
@@ -93,32 +188,6 @@ function Menu(nom,nb_entree, tailles_pizza, nb_pizza, tailles_boisson, nb_boisso
     this.price = prix;
 }
 
-function genEntree() {
-    let entrees = [];
-    for(let i = 0; i < 15; i++) {
-        entrees.push(new Entree("Entree " + i, ["Aucune", "Ketchup", "Moutarde"],'images/entree2.JPG',10));
-    }
-    return entrees;
-}
-
-function genPizza() {
-    let pizzas = [];
-    for(let i = 0; i < 12; i++) {
-        if(i != 5) pizzas.push(new Pizza("Pizza " + i, ["Jambon", "Champignons"], 'images/pizza2.jpeg'));
-        else pizzas.push(new Pizza("Pizza Special", ["Jambon", "Champignons", "Oeufs", "Ognions", "Bacon", "Salades"], 'images/pizza.png'));
-    }
-    return pizzas;
-}
-
-function genBoisson() {
-    let boissons = [];
-    for(let i = 0; i < 6; i++) {
-        if(i != 4) boissons.push(new Boisson("Coca Cola " + i, 5, ["25cL", "33cL"], 'images/coca.jpg'));
-        else boissons.push(new Boisson("Boisson Special", 5, ["33cL"], 'images/boissons.png'));
-    }
-    return boissons;
-}
-
 function genMenu() {
     let menus = [
         new Menu("Small Menu",1, ["Medium"], 1, ["25cL"], 1, 'images/menu.png', 30),
@@ -128,4 +197,4 @@ function genMenu() {
     return menus;
 }
 
-module.exports = {genEntree, genPizza, genBoisson, genMenu};
+module.exports = {getPizza, getEntree, genMenu, getIngr, getTaille, getBoisson, getIngr_Pizza};
