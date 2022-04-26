@@ -203,7 +203,7 @@ function gen_presentation(e, type, menu){
     if(type === "pizzas") {
         el.find(".personal").click(function() {
             let taille = el.find("select").val();
-            $.get("http://192.168.1.20:8080/pizza-ingr", {pizza:e.nom}, (ingr) => {
+            $.get("http://localhost:8080/pizza-ingr", {pizza:e.nom}, (ingr) => {
                 console.log(ingr);
                 init_perso(taille, new Map(ingr), menu);
             });
@@ -362,7 +362,7 @@ let prix_ingr = 1.5;
 let ingr_selected = new Map();
 
 function get_data_and_switch(type, menu) {
-    $.get("http://192.168.1.20:8080/" + type, {}, (data) => {
+    $.get("http://localhost:8080/" + type, {}, (data) => {
         current_block.fadeOut("slow", function() {
             current_block = $("#grille");
             $("#grille").empty();
@@ -510,8 +510,8 @@ function init_prev_choice_button() {
 }
 
 function init_perso(taille_select, ingr_select, menu) {
-    $.get("http://192.168.1.20:8080/ingr", {}, (ingr) => {
-        $.get("http://192.168.1.20:8080/taille", {}, (taille) => {
+    $.get("http://localhost:8080/ingr", {}, (ingr) => {
+        $.get("http://localhost:8080/taille", {}, (taille) => {
             $("#grille").fadeOut("slow", function() {
                 console.log(taille);
                 console.log(ingr);
@@ -556,7 +556,7 @@ function init_perso(taille_select, ingr_select, menu) {
 $("document").ready(function() {
     console.log("COUCOU");
 
-    $.get("http://192.168.1.20:8080/menus", {}, (data) => {
+    $.get("http://localhost:8080/menus", {}, (data) => {
         console.log(data);
         constr_grille(data);
         for(let d of data) d.menu = true;
