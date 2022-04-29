@@ -84,42 +84,34 @@ function constr_grille(tab, type, menu) {
 
 function nextMenuStep(menu){
     menu.number++;
+    let nb;
+    let nextStep;
     switch(menu.step){
-        case "entrees":
-            if(menu.number == menu.format.nb_entree){
-                menu.number = 0;
-                menu.step = "pizzas";
-                get_data_and_switch("pizzas", menu);
-                moveMenuBar("+=33.33%", "Pizzas");
-            } else {
-                get_data_and_switch("entrees", menu);
-            }
-            break;
-        case "pizzas":
-            if(menu.number == menu.format.nb_pizza){
-                menu.number = 0;
-                menu.step = "boissons";
-                get_data_and_switch("boissons", menu);
-                moveMenuBar("+=33.33%", "Boissons");
-            } else {
-                get_data_and_switch("pizzas", menu);
-            }
-            break;
-        case "boissons":
-            if(menu.number == menu.format.nb_boisson){
-                menu.number = 1;
-                $("#menuContainer").fadeOut("slow", function(){
-                    moveMenuBar("0%", "Entrées");
-                });
-                
-                panier.push(menu);
-                $("#panierContainer").html(gen_panier());
-                $("[data-toggle=tooltip]").tooltip();
-                get_data_and_switch("menus");
-            } else {
-                get_data_and_switch("boissons", menu);
-            }
-            break;
+        case "entrees": nb = menu.format.nb_entree; nextStep = "pizzas"; break;
+        case "pizzas": nb = menu.format.nb_pizza; nextStep = "boissons"; break;
+        case "boissons": nb = menu.format.nb_boisson; nextStep = "finish"; break;
+    }
+    if(menu.number < nb){
+        get_data_and_switch(menu.step, menu);
+    } else {
+        menu.step = nextStep;
+        if(menu.step !== "finish"){
+            menu.number = 0;
+            get_data_and_switch(nextStep, menu);
+            let title = menu.step.charAt(0).toUpperCase() + menu.step.slice(1);
+            moveBar("+=33.33%", title, "#menuBar", "#menuBarText");
+        } else {
+            menu.number = 1;
+            $("#menuContainer").fadeOut("slow", function(){
+                moveBar("0%", "Entrées", "#menuBar", "#menuBarText");
+            });
+            
+            panier.push(menu);
+            $("#panierContainer").html(gen_panier());
+            $("[data-toggle=tooltip]").tooltip();
+            get_data_and_switch("menus");
+        }
+
     }
 }
 
@@ -348,27 +340,16 @@ function gen_footer_choice() {
     $("#perso").append(footer);
 }
  
-function moveBar(dir, s) {
-    $("#bar").animate({
+function moveBar(dir, s, bar, barText) {
+    if(bar === undefined) bar = "#bar";
+    if(barText === undefined) bar = "#barText";
+    $(bar).animate({
         left: dir,
     }, 1000);
-    $("#barText").animate({
+    $(barText).animate({
         opacity: 0,
     }, 500, function(){
-        $("#barText").text(s).animate({
-            opacity: 1,
-        }, 500);
-    });
-}
-
-function moveMenuBar(dir, s) {
-    $("#menuBar").animate({
-        left: dir,
-    }, 1000);
-    $("#menuBarText").animate({
-        opacity: 0,
-    }, 500, function(){
-        $("#menuBarText").text(s).animate({
+        $(barText).text(s).animate({
             opacity: 1,
         }, 500);
     });
@@ -400,22 +381,12 @@ function get_data_and_switch(type, menu) {
             console.log(data);
             for(let d of data) d.menu = (type === "menus");
             if(menu !== undefined){
-                if(type === "boissons"){//Todo factoriser
+                if(type === "boissons" || type === "pizzas"){
+                    let tailles = type === "boissons" ? menu.format.tailles_boisson : menu.format.tailles_pizza;
                     for(let d of data){
                         console.log(menu);
                         for(let i = 0; i < d.choices.length; i++){
-                            if(!menu.format.tailles_boisson.includes(d.choices[i])){
-                                d.choices.splice(i, 1);
-                                i--;
-                            }
-                        }
-                    }
-                }
-                if(type === "pizzas"){
-                    for(let d of data){
-                        console.log(menu);
-                        for(let i = 0; i < d.choices.length; i++){
-                            if(!menu.format.tailles_pizza.includes(d.choices[i])){
+                            if(!tailles.includes(d.choices[i])){
                                 d.choices.splice(i, 1);
                                 i--;
                             }
