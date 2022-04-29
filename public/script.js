@@ -73,6 +73,7 @@ function init_tab(n, str) {
 }
 
 function constr_grille(tab, type, menu) {
+    console.log(menu);
     for (let i = 0; i < tab.length; i++) {
         tab[i].description = "jambonne, champignonne";
         let el = gen_presentation(tab[i], type, menu);
@@ -82,26 +83,43 @@ function constr_grille(tab, type, menu) {
 }
 
 function nextMenuStep(menu){
+    menu.number++;
     switch(menu.step){
         case "entrees":
-            menu.step = "pizzas";
-            get_data_and_switch("pizzas", menu);
-            moveMenuBar("+=33.33%", "Pizzas");
+            if(menu.number == menu.format.nb_entree){
+                menu.number = 0;
+                menu.step = "pizzas";
+                get_data_and_switch("pizzas", menu);
+                moveMenuBar("+=33.33%", "Pizzas");
+            } else {
+                get_data_and_switch("entrees", menu);
+            }
             break;
         case "pizzas":
-            menu.step = "boissons";
-            get_data_and_switch("boissons", menu);
-            moveMenuBar("+=33.33%", "Boissons");
+            if(menu.number == menu.format.nb_pizza){
+                menu.number = 0;
+                menu.step = "boissons";
+                get_data_and_switch("boissons", menu);
+                moveMenuBar("+=33.33%", "Boissons");
+            } else {
+                get_data_and_switch("pizzas", menu);
+            }
             break;
         case "boissons":
-            $("#menuContainer").fadeOut("slow", function(){
-                moveMenuBar("0%", "Entrées");
-            });
-            
-            panier.push(menu);
-            $("#panierContainer").html(gen_panier());
-            $("[data-toggle=tooltip]").tooltip();
-            get_data_and_switch("menus");
+            if(menu.number == menu.format.nb_boisson){
+                menu.number = 1;
+                $("#menuContainer").fadeOut("slow", function(){
+                    moveMenuBar("0%", "Entrées");
+                });
+                
+                panier.push(menu);
+                $("#panierContainer").html(gen_panier());
+                $("[data-toggle=tooltip]").tooltip();
+                get_data_and_switch("menus");
+            } else {
+                get_data_and_switch("boissons", menu);
+            }
+            break;
     }
 }
 
@@ -182,6 +200,7 @@ function gen_presentation(e, type, menu){
                 console.log("MENUU");
                 get_data_and_switch("entrees", menu);
                 $("#menuContainer").slideDown("slow");
+                $("#menuBar").css("left", "0%");
             }
         } else {
             let o = {name: e.nom, price: p, choice: choice, number:1};
@@ -362,6 +381,18 @@ let prix_ingr = 1.5;
 let ingr_selected = new Map();
 
 function get_data_and_switch(type, menu) {
+    if(menu === undefined){
+        $("#menuContainer").fadeOut("slow");
+    } else {
+        let text;
+        let n;
+        switch(type){
+            case "entrees": text = "Entrée"; n = menu.format.nb_entree; break;
+            case "pizzas": text = "Pizza"; n = menu.format.nb_pizza; break;
+            case "boissons": text = "Boisson"; n = menu.format.nb_boisson; break;
+        }
+        $("#menuStep").text(text+" "+(menu.number+1)+"/"+n);
+    }
     $.get("http://localhost:8080/" + type, {}, (data) => {
         current_block.fadeOut("slow", function() {
             current_block = $("#grille");
@@ -369,7 +400,7 @@ function get_data_and_switch(type, menu) {
             console.log(data);
             for(let d of data) d.menu = (type === "menus");
             if(menu !== undefined){
-                if(type === "boissons"){
+                if(type === "boissons"){//Todo factoriser
                     for(let d of data){
                         console.log(menu);
                         for(let i = 0; i < d.choices.length; i++){
@@ -558,8 +589,8 @@ $("document").ready(function() {
 
     $.get("http://localhost:8080/menus", {}, (data) => {
         console.log(data);
-        constr_grille(data);
         for(let d of data) d.menu = true;
+        constr_grille(data);
         $("#grille").fadeIn("slow");
     });
 
