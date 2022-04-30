@@ -58,7 +58,7 @@ function gen_panier(){
             }
         }
     p +=
-    '<li class="list-group-item d-flex justify-content-between align-items-center"><button type="button" class="btn btn-success">Commander</button><span class="badge badge-secondary">Total: '+totalPrice+'€</span></li>'
+    '<li class="list-group-item d-flex justify-content-between align-items-center"><button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#Modal">Commander</button><span class="badge badge-secondary">Total: '+totalPrice+'€</span></li>'
     +'</ul>';
     return $(p);
 }
@@ -586,4 +586,19 @@ $("document").ready(function() {
     $("#nav-perso").click(function() {
         init_perso();
     }); 
+
+    valid_form();
 });
+
+function valid_form() {
+    $("#command-form").submit(function(event) {
+        console.log("Plouc");
+        event.preventDefault();
+        $("#command-form").addClass("was-validated");
+        if($(".command-input:invalid").length === 0) {
+            // Envoyer une requete 
+            $.post("http://localhost:8080", {test: panier});
+            location.reload();
+        }
+    });
+}

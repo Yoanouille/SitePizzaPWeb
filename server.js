@@ -8,6 +8,8 @@ const port = 8080;
 
 server.use(express.static('public'));
 server.use(express.json());
+server.use(express.urlencoded({extended: true}));
+
 
 server.get('/', (req, res) => {
     res.sendFile("page.html", {root: 'public'});
@@ -40,6 +42,16 @@ server.get('/taille', (req, res) => {
 server.get('/pizza-ingr', (req, res) => {
     console.log(req.query);
     data.getIngr_Pizza(req.query.pizza).then(resul => {res.json(resul);}).catch(err => console.log(err.stack));
+});
+
+server.post('/command', (req, res) => {
+    console.log(req);
+});
+
+server.post('/', (req, res) => {
+    console.log(req.body.test);
+
+    res.sendFile("page.html", {root: 'public'});
 });
 
 server.listen(port, function() {

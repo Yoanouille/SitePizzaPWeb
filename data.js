@@ -2,9 +2,9 @@ let prix_ajout_ingredient = 1.5;
 
 const pg = require('pg');
 const pool = new pg.Pool({
-    user: 'alexandreleymarie',
+    user: 'yoan',
     host: 'localhost',
-    database: 'alexandreleymarie',
+    database: 'myBD',
     port: 5432
 });
 
