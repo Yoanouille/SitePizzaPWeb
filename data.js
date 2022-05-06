@@ -197,4 +197,264 @@ function genMenu() {
     return menus;
 }
 
-module.exports = {getPizza, getEntree, genMenu, getIngr, getTaille, getBoisson, getIngr_Pizza};
+async function getID(client, table) {
+    //console.log("SELECT MAX(id) + 1 as num FROM " + table);
+    let res = await client.query("SELECT MAX(id) + 1 as num FROM " + table);
+ 
+    //console.log("ID " + table + " : " + res.rows[0].num);
+    if(res.rows[0].num === null) res.rows[0].num = 0;
+    return res.rows[0].num;
+}
+
+// id integer primary key, 
+//     nom varchar(100),
+//     prenom varchar(100),
+//     adresse varchar(100),
+//     code varchar(100),
+//     numero_portable char(10),
+//     email varchar(100),
+//     heure_livraison time
+
+async function insertComm(client, id, nom, prenom, addr, code, num, email, heure) {
+    let str = "";
+    for(let i = 0; i < num.length; i++) {
+        if(num[i] !== ' ') {
+            str += num[i];
+        }
+    }
+    num = str;
+    if(code === undefined) code = "NULL";
+    console.log(num);
+    let res = await client.query("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "')");
+    console.log("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "')");
+}
+
+async function create_group(client, id, menu) {
+    let id_groupe = await getID(client, "groupe");
+    if(menu) await client.query("INSERT INTO groupe VALUES (" + id_groupe + ",NULL," + id + ")");
+    else await client.query("INSERT INTO groupe VALUES (" + id_groupe + "," + id + ",NULL)");
+    return id_groupe;
+}
+
+async function insert_elt(client, obj, groupe) {
+    if(obj.type === 'boissons') {
+        await client.query("INSERT INTO contient_boisson VALUES (" + groupe + ",'" + obj.name + "','" + obj.choice + "'," + obj.number + ")");
+    } else if(obj.type === 'entrees') {
+        await client.query("INSERT INTO contient_entree VALUES (" + groupe + ",'" + obj.name + "','" + obj.choice + "'," + obj.number + ")");
+    } else {
+        let id = await getID(client, "pizza");
+        console.log("INSERT INTO pizza VALUES (" + id + ",'" + obj.name + "')");
+        await client.query("INSERT INTO pizza VALUES (" + id + ",'" + obj.name + "')");
+        //Etape 4 pour les pizza perso inserer la pizza perso get le num et inserer chaque ingrédient
+        if(obj.name === 'Pizza Personnalisée') {
+            let str = "";
+            for(let i = 0; i < obj.choice.length; i++) {
+                if(obj.choice[i] === '+') {
+                    break;
+                }
+                str += obj.choice[i];
+            }
+            obj.choice = str.substring(0, str.length - 1);
+            console.log(obj.choice);
+            for(let i = 0; i < obj.ingr.length; i++) {
+                let tab = obj.ingr[i];
+                await client.query("INSERT INTO pizza_ingredient VALUES (" + id + ",'" + tab[0] + "'," + tab[1] + ")");
+            }
+        }
+        console.log("INSERT INTO contient_pizza VALUES (" + groupe + "," + id + ",'" + obj.choice + "'," + obj.number + ")");
+        await client.query("INSERT INTO contient_pizza VALUES (" + groupe + "," + id + ",'" + obj.choice + "'," + obj.number + ")");
+    }
+}
+
+async function storeCommande(req) {
+
+    //Etape 1 Inserer la commande (get le num de la commande et la mettre)
+    const client = await pool.connect();
+    
+    let num_comm = await getID(client, "commande");
+    await insertComm(client, num_comm, req.nom, req.prenom, req.addr, req.code, req.num, req.email, req.time);
+
+    //Etape 2 Creer le groupe de la commande et get le num
+    let groupe_comm_id = await create_group(client, num_comm, false);
+
+    for(let obj of req.panier) {
+        if(obj.menu === 'true') {
+            console.log("C'est un menu !");
+            //Etape 5 pour les menu :
+                // Creer le groupe menu et inserer comme pour les autres 
+            let menu_id = await getID(client, "menu");
+            await client.query("INSERT INTO menu VALUES (" + menu_id + ",'" + obj.name + "')");
+            await client.query("INSERT INTO contient_menu VALUES (" + num_comm + "," + menu_id + ")");
+            let groupe_id = await create_group(client, menu_id, true);
+
+            for(let menu_obj of obj.elts) {
+                console.log("On va inserer l'élément du menu");
+                await insert_elt(client, menu_obj, groupe_id);
+            }
+
+        } else {
+            //Etape 3 pour les boissons et entrees facile et Pizza non perso !
+            console.log("On va inserer l'élément de la commande");
+            await insert_elt(client, obj, groupe_comm_id);
+        }
+    }   
+
+    client.release();
+
+}
+
+
+async function get_groupe(client, id, menu) {
+    if(menu) {
+        let res = await client.query("select id FROM groupe WHERE menu=" + id);
+        return res.rows[0].id;
+    } else {
+        let res = await client.query("select id FROM groupe WHERE commande=" + id);
+        return res.rows[0].id;   
+    }
+
+}
+
+async function add_elt_in_panier(client, panier, id_groupe) {
+    console.log("SELECT * FROM contient_entree WHERE groupe=" + id_groupe);
+    let res = await client.query("SELECT * FROM contient_entree WHERE groupe=" + id_groupe);
+    for(let i = 0; i < res.rows.length; i++) {
+        let r = res.rows[i];
+        let o = {
+            name: r.nom_entree,
+            choice: r.sauce,
+            number: r.nombre,
+            type: 'entrees'
+        }
+        
+        if(r.sauce !== "Aucune") {
+            let r_prix = await client.query("select prix_sauce + prix_entree as prix from entrees natural join ass_ent_sau natural join sauces where nom_entree='" + o.name + "' AND nom_sauce='" + o.choice + "'");
+            o.prix = r_prix.rows[0].prix;
+        } else {
+            let r_prix = await client.query("select prix_entree as prix from entrees where nom_entree='" + o.name + "'");
+            o.prix = r_prix.rows[0].prix;
+        }
+
+        panier.push(o);
+    }
+
+    res = await client.query("SELECT * FROM contient_boisson WHERE groupe=" + id_groupe);
+    for(let i = 0; i < res.rows.length; i++) {
+        let r = res.rows[i];
+        let o = {
+            name: r.nom_boisson,
+            choice: r.taille,
+            number: r.nombre,
+            type: 'boissons'
+        }
+        
+        let r_prix = await client.query("select prix from boissons natural join boi_tai_pri where nom_boisson='" + o.name + "' AND taille='" + o.choice + "'");
+        o.prix = r_prix.rows[0].prix;
+
+        panier.push(o);
+    }
+
+    res = await client.query("SELECT * FROM contient_pizza WHERE groupe=" + id_groupe);
+    for(let i = 0; i < res.rows.length; i++) {
+        let r = res.rows[i];
+
+        let res2 = await client.query("SELECT * FROM pizza WHERE id=" + r.pizza);
+
+        let o = {
+            name: res2.rows[0].nom,
+            choice: r.taille,
+            number: r.nombre,
+            type: 'pizzas'
+        }
+        
+        let r_prix_taille = await client.query("select prix from tailles_pizza where nom_taille='" + o.choice + "'");
+        let prix_taille = r_prix_taille.rows[0].prix;
+
+        if(o.name === 'Pizza Personnalisée') {
+            let ingr = [];
+            let nb_ingr = 0;
+            let res3 = await client.query("SELECT * FROM pizza_ingredient WHERE pizza=" + r.pizza);
+            for(let j = 0; j < res3.rows.length; j++) {
+                let r3 = res3.rows[j];
+                ingr.push([r3.ingredient, r3.nombre]);
+                nb_ingr += r3.nombre;
+            }
+
+            o.ingr = ingr;
+            o.prix = prix_taille + (nb_ingr <= 3 ? 0 : (nb_ingr - 3) * prix_ajout_ingredient);
+        } else {
+            let res_prix = await client.query("SELECT SUM(quantite) as nb FROM ASS_PIZZ_ING WHERE nom_pizza='" + o.name + "' GROUP BY nom_pizza");
+            let nb_ingr = res_prix.rows[0].nb;
+            o.prix = prix_taille + (nb_ingr <= 3 ? 0 : (nb_ingr - 3) * prix_ajout_ingredient);
+        }
+
+        panier.push(o);
+    }
+
+}
+
+async function add_elt_menu(client, panier, id_commande) {
+    let res = await client.query("select * from contient_menu where commande=" + id_commande);
+    console.log(res.rows);
+    for(let i = 0; i < res.rows.length; i++) {
+        let r = res.rows[i];
+
+        let res2 = await client.query("select * from menu where id=" + r.menu);
+        let r2 = res2.rows[0];
+
+        let o = {
+            name: r2.nom,
+            type: 'menus',
+            number: 1,
+        }
+
+        let id_groupe = await get_groupe(client, r.menu, true);
+        console.log("ID MENU_GROUPE : " + id_groupe);
+
+        let elts = [];
+
+        await add_elt_in_panier(client, elts, id_groupe);
+        o.elts = elts;
+        console.log(elts);
+
+        panier.push(o);
+
+    } 
+}
+
+async function getCommande() {
+    let panier = [];
+    let o;
+    const client = await pool.connect();
+
+    let res = await client.query("select * from commande");
+    if(res.rowCount !== 0) {
+        let id_commande = res.rows[0].id;
+        let r = res.rows[0];
+        o = {
+            nom: r.nom,
+            prenom: r.prenom,
+            addr: r.adresse,
+            code: r.code,
+            num: r.numero_portable,
+            email: r.email,
+            heure: r.heure_livraison
+        }
+        
+        let id_groupe_comm = await get_groupe(client, id_commande, false);
+
+        await add_elt_in_panier(client, panier, id_groupe_comm);
+        await add_elt_menu(client, panier, id_commande);
+
+        o.panier = panier;
+
+    }
+    
+    client.release();
+
+    console.log(o);
+    return o;
+}
+getCommande();
+
+module.exports = {getPizza, getEntree, genMenu, getIngr, getTaille, getBoisson, getIngr_Pizza, storeCommande};

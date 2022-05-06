@@ -165,7 +165,7 @@ function gen_presentation(e, type, menu){
 
         if(menu === undefined){
             if(!e.menu){
-                let o = {name: e.nom, price: p, menu: false, choice: choice, number:1};
+                let o = {name: e.nom, price: p, menu: false, choice: choice, type: type,number:1};
                 let added = false;
                 for(let elt of panier){
                     if(elt.name !== "Pizza Personnalisée" && elt.name === o.name && elt.choice === o.choice){
@@ -195,7 +195,7 @@ function gen_presentation(e, type, menu){
                 $("#menuBar").css("left", "0%");
             }
         } else {
-            let o = {name: e.nom, price: p, choice: choice, number:1};
+            let o = {name: e.nom, price: p, type: type,choice: choice, number:1};
             let added = false;
             for(let elt of menu.elts){
                 if(elt.name === o.name && elt.choice === o.choice){
@@ -309,7 +309,7 @@ function gen_valid_choice(menu) {
             }
             ingr = ingr.substring(0, ingr.length - 2);
 
-            let o = {name: "Pizza Personnalisée", price: prix, menu: false, choice: $(".choice-taille.active").attr("nom") + " + " + ingr,taille: $(".choice-taille.active").attr("nom"), ingr: Array.from(ingr_selected), number:1};
+            let o = {name: "Pizza Personnalisée", type:"pizzas" ,price: prix, menu: false, choice: $(".choice-taille.active").attr("nom") + " + " + ingr,taille: $(".choice-taille.active").attr("nom"), ingr: Array.from(ingr_selected), number:1};
             
             if(menu === undefined){
                 panier.push(o);
@@ -342,7 +342,7 @@ function gen_footer_choice() {
  
 function moveBar(dir, s, bar, barText) {
     if(bar === undefined) bar = "#bar";
-    if(barText === undefined) bar = "#barText";
+    if(barText === undefined) barText = "#barText";
     $(bar).animate({
         left: dir,
     }, 1000);
@@ -597,7 +597,18 @@ function valid_form() {
         $("#command-form").addClass("was-validated");
         if($(".command-input:invalid").length === 0) {
             // Envoyer une requete 
-            $.post("http://localhost:8080", {test: panier});
+
+            
+            $.post("http://localhost:8080", {
+                panier: panier, 
+                nom: $("#Nom").val(), 
+                prenom: $("#Prenom").val(), 
+                addr: $("#addr").val(), 
+                code: $("#code").val(), 
+                num: $("#num").val(),
+                email: $("#Email").val(),
+                time: $("#Time").val(),
+            });
             location.reload();
         }
     });

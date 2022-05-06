@@ -49,8 +49,7 @@ server.post('/command', (req, res) => {
 });
 
 server.post('/', (req, res) => {
-    console.log(req.body.test);
-
+    data.storeCommande(req.body);
     res.sendFile("page.html", {root: 'public'});
 });
 
