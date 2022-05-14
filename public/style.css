@@ -82,3 +82,7 @@ img {
 span {
     margin: 0 auto;
 }
+
+.rm-panier {
+    cursor: pointer;
+}

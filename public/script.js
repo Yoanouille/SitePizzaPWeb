@@ -4,11 +4,13 @@ let panier = [];
 function gen_elt(elt){
     let s =
      '<li class="list-group-item d-flex justify-content-between align-items-center">'
-    +   '<div>'+elt.name;
+    +   '<div><span class="name-panier">'+elt.name+'</span>';
             if(elt.choice !== undefined){
-                s+=' <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="'+elt.choice+'"></i>'
+                s+=' <i class="bi-info-circle choice-panier" data-toggle="tooltip" data-placement="top" title="'+elt.choice+'" nom="' + elt.choice +'"></i>'
             }
-    s +='</div><div><span class="badge badge-secondary">'+(elt.price)+'€</span> <span class="badge badge-primary badge-pill badge-success">'+elt.number+'</span></div>'
+    s +='</div><div><span class="badge badge-secondary">'+(elt.price)+'€</span> <span class="badge badge-primary badge-pill badge-success">'+elt.number+'</span> '
+    +'<span class="badge badge-primary badge-pill badge-danger rm-panier">-</span>'
+    +'</div>'
     +'</li>';
     return s;
 }
@@ -63,6 +65,26 @@ function gen_panier(){
     return $(p);
 }
 
+function update_panier() {
+    $("#panierContainer").html(gen_panier());
+    $("[data-toggle=tooltip]").tooltip();
+    $(".rm-panier").click(function() {
+        let name = $(this).parent().parent().find(".name-panier").text();
+        let choice = $(this).parent().parent().find(".choice-panier").attr("nom");
+        for(let i = 0; i < panier.length; i++) {
+            if(panier[i].name === name && panier[i].choice === choice) {
+                panier[i].number--;
+                if(panier[i].number === 0) {
+                    panier.splice(i, 1);
+                }
+                break;
+            }
+        } 
+        update_panier();
+        console.log(name + " + " + choice);
+    });
+}
+
 function init_tab(n, str) {
     let tab = [];
     for(let i = 0; i < n; i++) {
@@ -72,17 +94,17 @@ function init_tab(n, str) {
     return tab;
 }
 
-function constr_grille(tab, type, menu) {
+function constr_grille(url,tab, type, menu) {
     console.log(menu);
     for (let i = 0; i < tab.length; i++) {
         tab[i].description = "jambonne, champignonne";
-        let el = gen_presentation(tab[i], type, menu);
+        let el = gen_presentation(url,tab[i], type, menu);
         //let el = gen_presentation(images, tab[i], "6€");
         $("#grille").append(el);
     }    
 }
 
-function nextMenuStep(menu){
+function nextMenuStep(url,menu){
     menu.number++;
     let nb;
     let nextStep;
@@ -92,12 +114,12 @@ function nextMenuStep(menu){
         case "boissons": nb = menu.format.nb_boisson; nextStep = "finish"; break;
     }
     if(menu.number < nb){
-        get_data_and_switch(menu.step, menu);
+        get_data_and_switch(url,menu.step, menu);
     } else {
         menu.step = nextStep;
         if(menu.step !== "finish"){
             menu.number = 0;
-            get_data_and_switch(nextStep, menu);
+            get_data_and_switch(url,nextStep, menu);
             let title = menu.step.charAt(0).toUpperCase() + menu.step.slice(1);
             moveBar("+=33.33%", title, "#menuBar", "#menuBarText");
         } else {
@@ -107,15 +129,14 @@ function nextMenuStep(menu){
             });
             
             panier.push(menu);
-            $("#panierContainer").html(gen_panier());
-            $("[data-toggle=tooltip]").tooltip();
-            get_data_and_switch("menus");
+            update_panier();
+            get_data_and_switch(url,"menus");
         }
 
     }
 }
 
-function gen_presentation(e, type, menu){
+function gen_presentation(url,e, type, menu){
     let multipleChoices = e.choices !== undefined;
     let first_price = e.price;
     if(multipleChoices) first_price += e.prices_choices[0];
@@ -178,19 +199,11 @@ function gen_presentation(e, type, menu){
                     panier.push(o);
                 }
                 console.log(panier);
-                $("#panierContainer").html(gen_panier());
-                $("[data-toggle=tooltip]").tooltip();
-                $("#grilleContainer").removeClass("col-sm-12").addClass("col-sm-8 col-lg-9");
-                //$("#persoContainer").removeClass("col-sm-12").addClass("col-sm-8 col-lg-9");
-                $("#panierContainer").show();
-                /*$("#panier").css("width: 0px;");
-                $("#panier").animate({
-                    width: "300px"
-                }, 1000);*/
+                update_panier();
             } else {
                 let menu = {name: e.nom, price: p, menu: true, elts: [], number:1, format:e, step:"entrees", number: 0};
                 console.log("MENUU");
-                get_data_and_switch("entrees", menu);
+                get_data_and_switch(url,"entrees", menu);
                 $("#menuContainer").slideDown("slow");
                 $("#menuBar").css("left", "0%");
             }
@@ -207,16 +220,16 @@ function gen_presentation(e, type, menu){
             if(!added){
                 menu.elts.push(o);
             }
-            nextMenuStep(menu);
+            nextMenuStep(url,menu);
         }
     });
 
     if(type === "pizzas") {
         el.find(".personal").click(function() {
             let taille = el.find("select").val();
-            $.get("http://localhost:8080/pizza-ingr", {pizza:e.nom}, (ingr) => {
+            $.get(url + "pizza-ingr", {pizza:e.nom}, (ingr) => {
                 console.log(ingr);
-                init_perso(taille, new Map(ingr), menu);
+                init_perso(url,taille, new Map(ingr), menu);
             });
         });
     }
@@ -288,7 +301,7 @@ function gen_ingr_choice(ingr, ingr_select) {
     perso.append(div);
 }
 
-function gen_valid_choice(menu) {
+function gen_valid_choice(url,menu) {
     let perso = $("#perso");
 
     let div = "<div class='card-body text-center' id='valid'>";
@@ -313,9 +326,7 @@ function gen_valid_choice(menu) {
             
             if(menu === undefined){
                 panier.push(o);
-                $("#panierContainer").html(gen_panier());
-                $("[data-toggle=tooltip]").tooltip();
-    
+                update_panier();
                 $("#perso").fadeOut("slow", function() {
                     current_block = $("#grille");
                     $("#grille").fadeIn("slow");
@@ -323,7 +334,7 @@ function gen_valid_choice(menu) {
             } else {
                 console.log(menu);
                 menu.elts.push(o);
-                nextMenuStep(menu);
+                nextMenuStep(url,menu);
             }
         }
     });
@@ -361,7 +372,7 @@ let nb_ingr_selected = 0;
 let prix_ingr = 1.5;
 let ingr_selected = new Map();
 
-function get_data_and_switch(type, menu) {
+function get_data_and_switch(url, type, menu) {
     if(menu === undefined){
         $("#menuContainer").fadeOut("slow");
     } else {
@@ -374,7 +385,7 @@ function get_data_and_switch(type, menu) {
         }
         $("#menuStep").text(text+" "+(menu.number+1)+"/"+n);
     }
-    $.get("http://localhost:8080/" + type, {}, (data) => {
+    $.get(url + type, {}, (data) => {
         current_block.fadeOut("slow", function() {
             current_block = $("#grille");
             $("#grille").empty();
@@ -394,7 +405,7 @@ function get_data_and_switch(type, menu) {
                     }
                 }
             }
-            constr_grille(data, type, menu);
+            constr_grille(url,data, type, menu);
 
             $("#grille").fadeIn("slow");
         });
@@ -511,9 +522,9 @@ function init_prev_choice_button() {
     });
 }
 
-function init_perso(taille_select, ingr_select, menu) {
-    $.get("http://localhost:8080/ingr", {}, (ingr) => {
-        $.get("http://localhost:8080/taille", {}, (taille) => {
+function init_perso(url,taille_select, ingr_select, menu) {
+    $.get(url + "ingr", {}, (ingr) => {
+        $.get(url + "taille", {}, (taille) => {
             $("#grille").fadeOut("slow", function() {
                 console.log(taille);
                 console.log(ingr);
@@ -535,7 +546,7 @@ function init_perso(taille_select, ingr_select, menu) {
                 gen_bar_choice();
                 gen_taille_choice(taille, taille_select);
                 gen_ingr_choice(ingr, ingr_select);
-                gen_valid_choice(menu);
+                gen_valid_choice(url,menu);
                 gen_footer_choice();
 
                 $("#ingr").hide();
@@ -558,10 +569,19 @@ function init_perso(taille_select, ingr_select, menu) {
 $("document").ready(function() {
     console.log("COUCOU");
 
-    $.get("http://localhost:8080/menus", {}, (data) => {
+    let url = window.location.href;
+    console.log(url);
+    let i = 0;
+    for(i = 1; i < url.length - 1; i++) {
+        if(url[i] === '/' && url[i + 1] !== '/' && url[i - 1] !== '/') break;
+    }
+    url = url.substring(0, i + 1);
+    
+
+    $.get(url + "menus", {}, (data) => {
         console.log(data);
         for(let d of data) d.menu = true;
-        constr_grille(data);
+        constr_grille(url,data);
         $("#grille").fadeIn("slow");
     });
 
@@ -571,26 +591,26 @@ $("document").ready(function() {
     $("#menuContainer").hide();
 
     $("#nav-menus").click(function() {
-        get_data_and_switch("menus");
+        get_data_and_switch(url, "menus");
     });
     $("#nav-entrees").click(function() {
-        get_data_and_switch("entrees");
+        get_data_and_switch(url, "entrees");
     });
     $("#nav-boissons").click(function() {
-        get_data_and_switch("boissons");
+        get_data_and_switch(url, "boissons");
     });
     $("#nav-pizzas").click(function() {
-        get_data_and_switch("pizzas");
+        get_data_and_switch(url, "pizzas");
     });
 
     $("#nav-perso").click(function() {
-        init_perso();
+        init_perso(url);
     }); 
 
-    valid_form();
+    valid_form(url);
 });
 
-function valid_form() {
+function valid_form(url) {
     $("#command-form").submit(function(event) {
         console.log("Plouc");
         event.preventDefault();
@@ -599,7 +619,7 @@ function valid_form() {
             // Envoyer une requete 
 
             
-            $.post("http://localhost:8080", {
+            $.post(url, {
                 panier: panier, 
                 nom: $("#Nom").val(), 
                 prenom: $("#Prenom").val(), 
