@@ -41,7 +41,7 @@ function gen_menu(menu){
     }
     s+=      '</div>'
     +   '</div>'
-    +   '<div><span class="badge badge-secondary">'+menu.price+'€</span></div>'
+    +   '<div><span class="badge badge-secondary">'+menu.price+'€</span> <span class="panier-rm-menu badge badge-primary badge-pill badge-danger" > - </span></div>'
     +'</li>';
     return s;
 }
@@ -82,6 +82,19 @@ function update_panier() {
         } 
         update_panier();
         console.log(name + " + " + choice);
+    });
+    $(".panier-rm-menu").click(function() {
+        let li = $(this).parent().parent();
+        let ul = li.parent();
+        let lis = ul.children();
+        for(let i = 0; i < lis.length; i++) {
+            if(lis.eq(i).is(li)) {
+                console.log(i);
+                panier.splice(i - 1, 1);
+                update_panier();
+                break;
+            }
+        }
     });
 }
 

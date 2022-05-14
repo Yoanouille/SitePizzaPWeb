@@ -83,6 +83,6 @@ span {
     margin: 0 auto;
 }
 
-.rm-panier {
+.rm-panier, .panier-rm-menu {
     cursor: pointer;
 }
