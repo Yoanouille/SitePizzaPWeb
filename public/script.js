@@ -65,36 +65,29 @@ function gen_panier(){
     return $(p);
 }
 
+function remove_elt_panier_with_index(elt) {
+    let li = elt.parent().parent();
+    let ul = li.parent();
+    let lis = ul.children();
+    for(let i = 0; i < lis.length; i++) {
+        if(lis.eq(i).is(li)) {
+            console.log(i);
+            panier[i - 1].number--;
+            if(panier[i - 1].number <= 0) panier.splice(i - 1, 1);
+            update_panier();
+            break;
+        }
+    }
+}
+
 function update_panier() {
     $("#panierContainer").html(gen_panier());
     $("[data-toggle=tooltip]").tooltip();
     $(".rm-panier").click(function() {
-        let name = $(this).parent().parent().find(".name-panier").text();
-        let choice = $(this).parent().parent().find(".choice-panier").attr("nom");
-        for(let i = 0; i < panier.length; i++) {
-            if(panier[i].name === name && panier[i].choice === choice) {
-                panier[i].number--;
-                if(panier[i].number === 0) {
-                    panier.splice(i, 1);
-                }
-                break;
-            }
-        } 
-        update_panier();
-        console.log(name + " + " + choice);
+        remove_elt_panier_with_index($(this));
     });
     $(".panier-rm-menu").click(function() {
-        let li = $(this).parent().parent();
-        let ul = li.parent();
-        let lis = ul.children();
-        for(let i = 0; i < lis.length; i++) {
-            if(lis.eq(i).is(li)) {
-                console.log(i);
-                panier.splice(i - 1, 1);
-                update_panier();
-                break;
-            }
-        }
+        remove_elt_panier_with_index($(this));
     });
 }
 
@@ -330,12 +323,16 @@ function gen_valid_choice(url,menu) {
             let prix = prix_pizza + prix_ingr_tot;
 
             let ingr = "";
+            let real_ingr = new Map();
             for(elt of ingr_selected) {
-                ingr += elt[1] + " " + elt[0] + ", ";
+                if(elt[1] !== 0) {
+                    ingr += elt[1] + " " + elt[0] + ", ";
+                    real_ingr.set(elt[0], elt[1]);
+                }
             }
             ingr = ingr.substring(0, ingr.length - 2);
 
-            let o = {name: "Pizza Personnalisée", type:"pizzas" ,price: prix, menu: false, choice: $(".choice-taille.active").attr("nom") + " + " + ingr,taille: $(".choice-taille.active").attr("nom"), ingr: Array.from(ingr_selected), number:1};
+            let o = {name: "Pizza Personnalisée", type:"pizzas" ,price: prix, menu: false, choice: $(".choice-taille.active").attr("nom") + " + " + ingr,taille: $(".choice-taille.active").attr("nom"), ingr: Array.from(real_ingr), number:1};
             
             if(menu === undefined){
                 panier.push(o);
@@ -353,11 +350,11 @@ function gen_valid_choice(url,menu) {
     });
 }
 
-function gen_footer_choice() {
+function gen_footer_choice(isSelect) {
 
     let footer = "<div class='card-footer'>";
     footer += "<button type='button' id='prev' class='btn btn-outline-dark disabled'>Precedent</button>"
-    footer += "<button type='button' id='next' class='btn btn-outline-success disabled'>Suivant</button>"
+    footer += "<button type='button' id='next' class='btn btn-outline-success" + (isSelect ? "" : " disabled") + "'>Suivant</button>"
     footer += "<div class='text-right' id='prix-perso' style='float: right;'>Prix : 0€</div>"
     footer += "</div>";
 
@@ -452,24 +449,27 @@ function init_choice_taille_button() {
 
 function init_add_elt_button() {
     $(".add-elt").click(function() {
-        let elt = $(this).parent().find(".count");
-        let ingr = $(this).parent().parent().find(".nom-ingr");
-        let n = ingr_selected.get(ingr.text());
-        if(n === undefined) ingr_selected.set(ingr.text(), 1);
-        else ingr_selected.set(ingr.text(), n + 1);
-        console.log(ingr_selected);
-        nb_ingr_selected++;
-        if(nb_ingr_selected == 3) {
-            $(".prix-ingr").text(prix_ingr + "€");
+        if(nb_ingr_selected < 6) {
+            let elt = $(this).parent().find(".count");
+            let ingr = $(this).parent().parent().find(".nom-ingr");
+            let n = ingr_selected.get(ingr.text());
+            if(n === undefined) ingr_selected.set(ingr.text(), 1);
+            else ingr_selected.set(ingr.text(), n + 1);
+            nb_ingr_selected++;
+            if(nb_ingr_selected >= 3) {
+                $(".prix-ingr").text(prix_ingr + "€");
+            }
+
+            let nb = parseInt(elt.text());
+            nb += 1;
+            elt.text(nb);
+
+            update_price(nb_ingr_selected, prix_ingr);
         }
-
-        let nb = parseInt(elt.text());
-        nb += 1;
-        elt.text(nb);
-
-        update_price(nb_ingr_selected, prix_ingr);
     });
 }
+
+
 
 function init_rm_elt_button() {
     $(".remove-elt").click(function() {
@@ -484,10 +484,9 @@ function init_rm_elt_button() {
                 ingr_selected.delete(ingr.text());
             }
             if(n !== undefined) ingr_selected.set(ingr.text(), n - 1);
-            console.log(ingr_selected);
 
             nb_ingr_selected--;
-            if(nb_ingr_selected === 2) {
+            if(nb_ingr_selected <= 2) {
                 $(".prix-ingr").text("Gratuit");
             }
             nb--;
@@ -509,7 +508,7 @@ function init_next_choice_button() {
 
                 div = "<p>" + $(".choice-taille.active").attr("nom") + "</p>";
                 for(elt of ingr_selected) {
-                    div += "<p>" + elt[1] + " x " + elt[0] + "</p>";
+                    if(elt[1] !== 0) div += "<p>" + elt[1] + " x " + elt[0] + "</p>";
                 }
 
                 $("#recap").empty().append(div);
@@ -560,7 +559,7 @@ function init_perso(url,taille_select, ingr_select, menu) {
                 gen_taille_choice(taille, taille_select);
                 gen_ingr_choice(ingr, ingr_select);
                 gen_valid_choice(url,menu);
-                gen_footer_choice();
+                gen_footer_choice(taille_selected);
 
                 $("#ingr").hide();
                 $("#valid").hide();
@@ -571,7 +570,12 @@ function init_perso(url,taille_select, ingr_select, menu) {
                 init_next_choice_button();
                 init_prev_choice_button();
 
-                update_price(nb_ingr_selected, prix_ingr);
+                if(taille_select) update_price(nb_ingr_selected, prix_ingr);
+                if(nb_ingr_selected >= 3) {
+                    $(".prix-ingr").text(prix_ingr + "€");
+                } else {
+                    $(".prix-ingr").text("Gratuit");
+                }
 
                 $("#persoContainer").fadeIn("slow");
             });
@@ -625,13 +629,9 @@ $("document").ready(function() {
 
 function valid_form(url) {
     $("#command-form").submit(function(event) {
-        console.log("Plouc");
         event.preventDefault();
         $("#command-form").addClass("was-validated");
         if($(".command-input:invalid").length === 0) {
-            // Envoyer une requete 
-
-            
             $.post(url, {
                 panier: panier, 
                 nom: $("#Nom").val(), 
