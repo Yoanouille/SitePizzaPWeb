@@ -7,6 +7,9 @@ DROP TABLE IF EXISTS PIZZAS cascade;
 DROP TABLE IF EXISTS ASS_PIZZ_ING cascade;
 DROP TABLE IF EXISTS BOISSONS cascade;
 DROP TABLE IF EXISTS BOI_TAI_PRI cascade;
+DROP TABLE IF EXISTS MENUS cascade;
+DROP TABLE IF EXISTS ASS_TAILLE_BOI_MENU cascade;
+DROP TABLE IF EXISTS ASS_TAILLE_PIZZA_MENU cascade;
 
 CREATE TABLE INGRS (
     nom_ingr varchar(100) primary key,
@@ -62,9 +65,35 @@ CREATE TABLE BOI_TAI_PRI(
     nom_boisson varchar(100),
     taille varchar(10),
     prix integer,
-    primary key(nom_boisson, taille, prix),
+    primary key(nom_boisson, taille),
     FOREIGN KEY (nom_boisson) REFERENCES BOISSONS(nom_boisson)
 );
+
+CREATE TABLE MENUS (
+    nom_menu varchar(100) primary key,
+    image_url varchar(100),
+    prix integer,
+    nb_entree integer,
+    nb_pizza integer,
+    nb_boisson integer
+);
+
+CREATE TABLE ASS_TAILLE_PIZZA_MENU (
+    nom_menu varchar(100),
+    nom_taille varchar(100),
+    primary key (nom_menu, nom_taille),
+    FOREIGN KEY (nom_menu) REFERENCES MENUS(nom_menu),
+    FOREIGN KEY (nom_taille) REFERENCES TAILLES_PIZZA(nom_taille)
+);
+
+CREATE TABLE ASS_TAILLE_BOI_MENU (
+    nom_menu varchar(100),
+    nom_taille varchar(100),
+    primary key (nom_menu, nom_taille),
+    FOREIGN KEY (nom_menu) REFERENCES MENUS(nom_menu)
+);
+
+
 
 INSERT INTO INGRS VALUES
 ('Jambon','images/ingr/jambons.png'),
@@ -141,6 +170,27 @@ INSERT INTO BOI_TAI_PRI VALUES
 ('Boisson 23', '33cL', 10),
 ('Boisson Je sais plus', '33cL', 36),
 ('Boisson blabla', '33cL', 0);
+
+INSERT INTO MENUS VALUES
+('Small Menu', 'images/menu.png',30, 1, 1, 1),
+('Medium Menu', 'images/Menu2.png',45, 2, 2, 2),
+('Big Menu', 'images/menu.png',60, 3, 3, 3);
+
+INSERT INTO ASS_TAILLE_PIZZA_MENU VALUES
+('Small Menu', 'Medium'),
+('Medium Menu', 'Medium'),
+('Medium Menu', 'Large'),
+('Big Menu', 'Medium'),
+('Big Menu', 'Large'),
+('Big Menu', 'XLarge');
+
+INSERT INTO ASS_TAILLE_BOI_MENU VALUES
+('Small Menu', '25cL'),
+('Medium Menu', '25cL'),
+('Medium Menu', '33cL'),
+('Big Menu', '25cL'),
+('Big Menu', '33cL'),
+('Big Menu', '1L');
 
 
 

@@ -4,7 +4,8 @@ const pg = require('pg');
 const pool = new pg.Pool({
     user: 'yoan',
     host: 'localhost',
-    database: 'myBD',
+    database: 'bd-web',
+    password: 'yoyo',
     port: 5432
 });
 
@@ -114,6 +115,7 @@ async function getPizza() {
         for(let j = 0; j < pizza.length; j++) {
             if(elt.nom_pizza == pizza[j].nom) {
                 pizza[j].ingredients.set(elt.nom_ingr, elt.quantite);
+                pizza[j].description += elt.nom_ingr + " x " + elt.quantite + ", ";
                 pizza[j].nb_ingr += elt.quantite;
             } 
         }
@@ -122,6 +124,7 @@ async function getPizza() {
     for(let i = 0; i < pizza.length; i++) {
         pizza[i].price = pizza[i].nb_ingr > 3 ? (pizza[i].nb_ingr - 3) * prix_ajout_ingredient : 0;
         pizza[i].ingredients = Array.from(pizza[i].ingredients);
+        pizza[i].description = pizza[i].description.substring(0, pizza[i].description.length - 2);
     } 
 
     client.release();
@@ -155,6 +158,7 @@ function Entree(nom, imageURL, prix) {
     this.imageURL = imageURL;
     this.price = prix;
     this.prices_choices = [0];
+    this.description = "";
 }
 
 
@@ -166,6 +170,7 @@ function Pizza(nom, taille, taille_prix, imageURL) {
     this.price = 0
     this.nb_ingr = 0;
     this.prices_choices = taille_prix;
+    this.description = "";
 
 }
 
@@ -175,25 +180,79 @@ function Boisson(nom, image_url) {
     this.choices = [];
     this.prices_choices = [];
     this.imageURL = image_url;
+    this.description = "";
 }
 
-function Menu(nom,nb_entree, tailles_pizza, nb_pizza, tailles_boisson, nb_boisson, image, prix) {
+
+function getMenuDescr(menu) {
+    menu.description = menu.nb_entree + " entrée(s) , " + menu.nb_pizza + " pizza(s), " + menu.nb_boisson + " boisson(s)<br>";
+    menu.description += "Taille Pizza : ";
+    for(let i = 0; i < menu.tailles_pizza.length; i++) {
+        menu.description += menu.tailles_pizza[i];
+        if(i < menu.tailles_pizza.length - 1) menu.description += ", ";
+    }
+    menu.description += "<br>Taille Boisson : ";
+    for(let i = 0; i < menu.tailles_boisson.length; i++) {
+        menu.description += menu.tailles_boisson[i];
+        if(i < menu.tailles_boisson.length - 1) menu.description += ", ";
+    }
+}   
+
+function Menu(nom,nb_entree, nb_pizza, nb_boisson, image, prix) {
     this.nom = nom;
     this.nb_entree = nb_entree;
-    this.tailles_pizza = tailles_pizza;
+    this.tailles_pizza = [];
     this.nb_pizza = nb_pizza;
-    this.tailles_boisson = tailles_boisson;
+    this.tailles_boisson = [];
     this.nb_boisson = nb_boisson;
     this.imageURL = image;
     this.price = prix;
+    this.description = "";
 }
 
-function genMenu() {
-    let menus = [
-        new Menu("Small Menu",1, ["Medium"], 1, ["25cL"], 1, 'images/menu.png', 30),
-        new Menu("Medium Menu",2, ["Medium", "Large"], 2, ["25cL","33cL"], 2, 'images/Menu2.png', 45),
-        new Menu("Big Menu",3, ["Medium", "Large", "XLarge"], 3, ["25cL","33cL","1L"], 3, 'images/menu.png', 60),
-    ];
+
+
+async function genMenu() {
+    let menus = [];
+
+    const client = await pool.connect();
+
+    let res = await client.query("SELECT * FROM MENUS");
+    console.log(res.rows);
+    for(let i = 0; i < res.rows.length; i++) {
+        let elt = res.rows[i];
+        menus.push(new Menu(elt.nom_menu, elt.nb_entree, elt.nb_pizza, elt.nb_boisson, elt.image_url, elt.prix));
+    }
+
+    res = await client.query("SELECT * FROM ASS_TAILLE_PIZZA_MENU");
+    for(let i = 0; i < res.rows.length; i++) {
+        let elt = res.rows[i];
+        for(let j = 0; j < menus.length; j++) {
+            if(elt.nom_menu == menus[j].nom) {
+                menus[j].tailles_pizza.push(elt.nom_taille);
+                break;
+            }
+        }
+    }
+
+    res = await client.query("SELECT * FROM ASS_TAILLE_BOI_MENU");
+    for(let i = 0; i < res.rows.length; i++) {
+        let elt = res.rows[i];
+        for(let j = 0; j < menus.length; j++) {
+            if(elt.nom_menu == menus[j].nom) {
+                menus[j].tailles_boisson.push(elt.nom_taille);
+                break;
+            }
+        }
+    }
+
+    for(let i = 0; i < menus.length; i++) {
+        getMenuDescr(menus[i]);
+    }
+
+    client.release();
+
+    console.log(menus);
     return menus;
 }
 

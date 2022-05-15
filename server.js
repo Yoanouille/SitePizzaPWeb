@@ -16,7 +16,7 @@ server.get('/', (req, res) => {
 });
 
 server.get('/menus', (req, res) => {
-    res.json(data.genMenu());
+    data.genMenu().then(resul => {res.json(resul);}).catch(err => console.log(err.stack));
 });
 
 server.get('/entrees', (req, res) => {
