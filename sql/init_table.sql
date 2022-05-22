@@ -19,7 +19,7 @@ CREATE TABLE INGRS (
 
 CREATE TABLE TAILLES_PIZZA(
     nom_taille varchar(100) primary key,
-    prix integer,
+    prix real,
     image_url varchar(100)
 );
 
@@ -30,7 +30,7 @@ CREATE TABLE SAUCES(
 
 CREATE TABLE ENTREES(
     nom_entree varchar(100) primary key,
-    prix_entree integer,
+    prix_entree real,
     image_url varchar(100)
 );
 
@@ -64,7 +64,7 @@ CREATE TABLE BOISSONS(
 CREATE TABLE BOI_TAI_PRI(
     nom_boisson varchar(100),
     taille varchar(10),
-    prix integer,
+    prix real,
     primary key(nom_boisson, taille),
     FOREIGN KEY (nom_boisson) REFERENCES BOISSONS(nom_boisson)
 );
@@ -72,7 +72,7 @@ CREATE TABLE BOI_TAI_PRI(
 CREATE TABLE MENUS (
     nom_menu varchar(100) primary key,
     image_url varchar(100),
-    prix integer,
+    prix real,
     nb_entree integer,
     nb_pizza integer,
     nb_boisson integer
@@ -115,23 +115,38 @@ INSERT INTO TAILLES_PIZZA VALUES
 ('XLarge', 40, 'images/pizza/Xlarge.jpg');
 
 INSERT INTO SAUCES VALUES
-('Moutarde', 2),
-('Ketchup', 2);
+('Moutarde', 1.15),
+('Curry', 1.30),
+('Barbecue', 1.10),
+('Mayonnaise', 1.60),
+('Ketchup', 1.09);
 
 INSERT INTO ENTREES VALUES
-('Entrée 1', 5, 'images/entree2.JPG'),
-('Entrée 2', 6, 'images/entree2.JPG'),
-('Entrée 3', 5, 'images/entree2.JPG'),
-('Entrée 4', 7, 'images/entree2.JPG'),
-('Entrée 5', 3, 'images/entree2.JPG'),
-('Entrée 6', 3, 'images/entree2.JPG'),
-('Entrée 7', 1, 'images/entree2.JPG');
+('Chicken Wings', 5.5, 'images/entree/chicken.jpeg'),
+('Breadsticks Mozzarella', 6, 'images/entree/breadsticks.jpg'),
+('Potatoes', 4.89, 'images/entree/potatoes.jpg'),
+('Frites', 4.35, 'images/entree/frites.webp'),
+('Nuggets de Poulet', 5.6, 'images/entree/nuggets.webp'),
+('Salade César', 4.12, 'images/entree/cesar.jpg'),
+('Salade Méditéranéenne', 5.90, 'images/entree/méditeraneenne.jpg'),
+('Salade Tomates Oignons Concombres', 3.90, 'images/entree/salade.JPG');
 
 INSERT INTO ASS_ENT_SAU VALUES
-('Entrée 1', 'Ketchup'),
-('Entrée 1', 'Moutarde'),
-('Entrée 4', 'Ketchup'),
-('Entrée 6', 'Moutarde');
+('Chicken Wings', 'Ketchup'),
+('Chicken Wings', 'Moutarde'),
+('Chicken Wings', 'Curry'),
+('Chicken Wings', 'Mayonnaise'),
+('Chicken Wings', 'Barbecue'),
+('Breadsticks Mozzarella', 'Ketchup'),
+('Breadsticks Mozzarella', 'Barbecue'),
+('Potatoes', 'Ketchup'),
+('Potatoes', 'Moutarde'),
+('Potatoes', 'Mayonnaise'),
+('Potatoes', 'Barbecue'),
+('Frites', 'Ketchup'),
+('Frites', 'Moutarde'),
+('Frites', 'Mayonnaise'),
+('Frites', 'Barbecue');
 
 INSERT INTO PIZZAS VALUES
 ('Pizza Regina', 'images/pizza/regina.jpg'),
@@ -147,34 +162,53 @@ INSERT INTO ASS_PIZZ_ING VALUES
 ('Pizza Méditéraneenne', 'Olive', 3);
 
 INSERT INTO BOISSONS VALUES
-('Boisson 1', 'images/boisson/coca.jpg'),
-('Boisson 3', 'images/boisson/coca.jpg'),
-('Boisson 2', 'images/boisson/coca.jpg'),
-('Boisson 4', 'images/boisson/coca.jpg'),
-('Boisson 5', 'images/boisson/boissons.png'),
-('Boisson 12', 'images/boisson/boissons.png'),
-('Boisson 23', 'images/boisson/boissons.png'),
-('Boisson Je sais plus', 'images/boisson/boissons.png'),
-('Boisson blabla', 'images/boisson/boissons.png');
+('Coca Cola', 'images/boisson/coca.jpg'),
+('Pepsi', 'images/boisson/pepsi.png'),
+('Fanta', 'images/boisson/fanta.png'),
+('Orangina', 'images/boisson/orangina.jpg'),
+('Dr Pepper', 'images/boisson/drpepper.jpeg'),
+('Oasis', 'images/boisson/oasis.jpg'),
+('7 Up', 'images/boisson/7up.jpg'),
+('Sprite', 'images/boisson/sprite.png'),
+('Perrier', 'images/boisson/perrier.jpg'),
+('Cristaline', 'images/boisson/cristaline.png');
 
 INSERT INTO BOI_TAI_PRI VALUES
-('Boisson 1', '33cL', 10),
-('Boisson 1', '25cL', 7),
-('Boisson 1', '17cL', 5),
-('Boisson 1', '1mm', 1),
-('Boisson 1', 'infini', 100),
-('Boisson 2', '33cL', 10),
-('Boisson 3', '33cL', 10),
-('Boisson 5', '33cL', 10),
-('Boisson 12', '33cL', 10),
-('Boisson 23', '33cL', 10),
-('Boisson Je sais plus', '33cL', 36),
-('Boisson blabla', '33cL', 0);
+('Coca Cola', '25cL', 2),
+('Coca Cola', '33cL', 3),
+('Coca Cola', '1L', 9),
+('Pepsi', '25cL', 2),
+('Pepsi', '33cL', 3),
+('Pepsi', '1L', 9),
+('Fanta', '25cL', 3),
+('Fanta', '33cL', 4),
+('Fanta', '1L', 10),
+('Orangina', '25cL', 3),
+('Orangina', '33cL', 4),
+('Orangina', '1L', 10),
+('Dr Pepper', '25cL', 2),
+('Dr Pepper', '33cL', 3),
+('Dr Pepper', '1L', 9),
+('Oasis', '25cL', 4),
+('Oasis', '33cL', 6),
+('Oasis', '1L', 11),
+('7 Up', '25cL', 1.5),
+('7 Up', '33cL', 2),
+('7 Up', '1L', 6),
+('Sprite', '25cL', 1.75),
+('Sprite', '33cL', 3.25),
+('Sprite', '1L', 6.85),
+('Perrier', '25cL', 0.89),
+('Perrier', '33cL', 1.25),
+('Perrier', '1L', 3.21),
+('Cristaline', '25cL', 0.5),
+('Cristaline', '33cL', 0.75),
+('Cristaline', '1L', 1);
 
 INSERT INTO MENUS VALUES
-('Small Menu', 'images/menu.png',30, 1, 1, 1),
-('Medium Menu', 'images/Menu2.png',45, 2, 2, 2),
-('Big Menu', 'images/menu.png',60, 3, 3, 3);
+('Small Menu', 'images/menu/menu1.jpg',25, 1, 1, 1),
+('Medium Menu', 'images/menu/menu3.png',35, 2, 2, 2),
+('Big Menu', 'images/menu/menu2.png',45, 3, 3, 3);
 
 INSERT INTO ASS_TAILLE_PIZZA_MENU VALUES
 ('Small Menu', 'Medium'),
