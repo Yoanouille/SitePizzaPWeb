@@ -34,8 +34,6 @@ function gen_menu(menu){
     +          menu.name
     +      '</button>'
     +      '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
-    //+          '<div class="dropdown-item">Salade César <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="sauce ketchup"></i></div>'
-    //+          '<div class="dropdown-item">Pizza Calzone <i class="bi-info-circle" data-toggle="tooltip" data-placement="top" title="XLarge"></i> <span class="badge badge-primary badge-pill badge-success">2</span></div>';
     for(let elt of menu.elts){
             s += gen_menu_elt(elt);
     }
@@ -59,9 +57,11 @@ function gen_panier(){
                 p += gen_elt(elt);
             }
         }
-    p +=
-    '<li class="list-group-item d-flex justify-content-between align-items-center"><button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#Modal">Commander</button><span class="badge badge-secondary">Total: '+totalPrice+'€</span></li>'
-    +'</ul>';
+    if(totalPrice === 0)
+        p += '<li class="list-group-item d-flex justify-content-between align-items-center"><button type="button" class="btn btn-success">Commander</button><span class="badge badge-secondary">Total: '+totalPrice+'€</span></li>'
+    else
+        p += '<li class="list-group-item d-flex justify-content-between align-items-center"><button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#Modal">Commander</button><span class="badge badge-secondary">Total: '+totalPrice+'€</span></li>'
+    p += '</ul>';
     return $(p);
 }
 
@@ -387,7 +387,10 @@ function valid_form(url) {
                 email: $("#Email").val(),
                 time: $("#Time").val(),
             });
-            location.reload();
+            $('#Modal').modal('toggle');
+            $('#Success').modal('toggle');
+            panier = [];
+            update_panier();
         }
     });
 }
