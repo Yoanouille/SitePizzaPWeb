@@ -146,7 +146,12 @@ INSERT INTO ASS_ENT_SAU VALUES
 ('Frites', 'Ketchup'),
 ('Frites', 'Moutarde'),
 ('Frites', 'Mayonnaise'),
-('Frites', 'Barbecue');
+('Frites', 'Barbecue'),
+('Nuggets de Poulet', 'Ketchup'),
+('Nuggets de Poulet', 'Moutarde'),
+('Nuggets de Poulet', 'Mayonnaise'),
+('Nuggets de Poulet', 'Barbecue'),
+('Nuggets de Poulet', 'Curry');
 
 INSERT INTO PIZZAS VALUES
 ('Pizza Regina', 'images/pizza/regina.jpg'),
