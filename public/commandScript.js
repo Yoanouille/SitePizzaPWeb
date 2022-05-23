@@ -1,3 +1,4 @@
+//Fonction qui modifie les valeurs des infos de la commande sur la page selon les valeurs stockées dans command
 function setCommandInfo(command){
     $("#Nom").val(command.nom);
     $("#Prenom").val(command.prenom);
@@ -13,17 +14,18 @@ function setCommandInfo(command){
     $("#Time").val(command.heure);
 }
 
-function update_panier(panier) {
+//Fonction qui affiche le panier de la commande sur la page
+function setPanier(panier) {
     $("#commandContainer").html(gen_panier(panier, true));
     $("[data-toggle=tooltip]").tooltip();
 }
 
+//Quand le document est prêt, on envoie une requête au serveur pour récupérer une commande et l'afficher
 $("document").ready(function() {
     $("#block1").hide();
     $.get("/commande", {}, (data) => {
-        console.log("dataa");
         console.log(data);
-        update_panier(data.panier);
+        setPanier(data.panier);
         setCommandInfo(data);
         $("#block1").show();
         $("#commandId").val(data.id);

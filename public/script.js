@@ -159,8 +159,9 @@ function elt_add_function(el, url, e, multipleChoices,type, menu) {
             p = e.price;
         }
 
-        //Si on est dans le choix d'un menu
+        //Teste si on est dans le choix d'un menu
         if(menu === undefined){
+            //Si on est pas dans le choix d'un menu
             if(!e.menu){
                 //Si c'est pas un menu on l'ajoute dans le panier
                 //Soit on incrémente le nb 

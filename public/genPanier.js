@@ -1,3 +1,5 @@
+//Fonction qui génère le code html d'un élément dans le panier
+//Si livraison est true, il n'y a pas de bouton pour supprimer l'élément
 function gen_elt(elt, livraison){
     let s =
      '<li class="list-group-item d-flex justify-content-between align-items-center">'
@@ -11,6 +13,7 @@ function gen_elt(elt, livraison){
     return s;
 }
 
+//Fonction qui génère le code html d'un élément d'un menu dans le panier
 function gen_menu_elt(elt){
     let s =
      '<div class="dropdown-item">'+elt.name;
@@ -22,6 +25,8 @@ function gen_menu_elt(elt){
     return s;
 }
 
+//Fonction qui génère le code html d'un menu dans le panier
+//Si livraison est true, il n'y a pas de bouton pour supprimer le menu
 function gen_menu(menu, livraison){
     let s =
      '<li class="list-group-item d-flex justify-content-between align-items-center">'
@@ -30,6 +35,7 @@ function gen_menu(menu, livraison){
     +          menu.name
     +      '</button>'
     +      '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+    //Pour chaque élément du menu, on génère son code htm pour l'ajouter au menu
     for(let elt of menu.elts){
             s += gen_menu_elt(elt);
     }
@@ -42,11 +48,13 @@ function gen_menu(menu, livraison){
     return s;
 }
 
-//si livraison est true, il n'y a pas de boutons pour supprimer les éléments ni pour commander
+//Fonction qui construit l'élément html du panier à partir d'un tableau représentant le panier
+//Si livraison est true, il n'y a pas de boutons pour supprimer les éléments ni pour commander
 function gen_panier(panier, livraison){
     let p =
      '<ul id="panier" class="list-group shadow-sm">'
     +'<li class="list-group-item text-center"><h4>Panier</h4></li>';
+        //Pour chaque élément du panier, on génère son code html et on ajoute son prix au prix total
         let totalPrice = 0;
         for(let elt of panier){
             totalPrice += elt.price*elt.number;
@@ -56,6 +64,7 @@ function gen_panier(panier, livraison){
                 p += gen_elt(elt, livraison);
             }
         }
+    //On arrondit le prix total au centime près (pour éviter les erreurs d'arithmétique à virgule flottante)
     totalPrice = Math.round(totalPrice*100)/100;
     p += '<li class="list-group-item d-flex justify-content-between align-items-center">';
     if(!livraison){
@@ -65,5 +74,5 @@ function gen_panier(panier, livraison){
             p += '<button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#Modal">Commander</button>';
     }
     p += '<span class="badge badge-secondary">Total: '+totalPrice+'€</span></li></ul>';
-    return $(p);
+    return p;
 }
