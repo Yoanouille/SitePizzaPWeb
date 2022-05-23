@@ -4,7 +4,7 @@ Projet Web Licence 3
 
 ## Utilisation
 
-Il vous faut une base de données auxquels vous avez accès.
+Il vous faut une base de données à laquelle vous avez accès.
 De base cette base de données doit avoir pour nom 'bd-web'
 Mais vous pouvez en choisir un autre pour cette base de données, il faudra alors renseigner ce nom lors du lancement du serveur.
 
