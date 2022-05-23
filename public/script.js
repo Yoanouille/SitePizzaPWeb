@@ -143,6 +143,24 @@ function nextMenuStep(url,menu){
     }
 }
 
+function animation_plus1(button) {
+    let bidule = $('<span class="badge badge-primary badge-pill badge-success">+1</span>');
+    bidule.css({
+        "position": "absolute",
+        "top": "90%",
+        "left":"50%",
+    });
+
+    button.append(bidule);
+
+    bidule.animate({
+        opacity: 0,
+        top: "-=10%",
+    }, 1000, function() {
+        $(this).remove();
+    });
+}
+
 //Fonction qui permet d'ajouter un élément dans le panier/ ou si c'est un menu de lancer le choix du menu
 function elt_add_function(el, url, e, multipleChoices,type, menu) {
     el.find(".ajout").click(function(){    
@@ -161,7 +179,7 @@ function elt_add_function(el, url, e, multipleChoices,type, menu) {
 
         //Teste si on est dans le choix d'un menu
         if(menu === undefined){
-            //Si on est pas dans le choix d'un menu
+            //Si ce n'est pas un menu
             if(!e.menu){
                 //Si c'est pas un menu on l'ajoute dans le panier
                 //Soit on incrémente le nb 
@@ -177,6 +195,9 @@ function elt_add_function(el, url, e, multipleChoices,type, menu) {
                 }
                 if(!added) panier.push(o);
                 update_panier();
+
+                animation_plus1($(this));
+
             } else {
                 //Si c'est un menu
                 //On lance le choix des éléments du menu

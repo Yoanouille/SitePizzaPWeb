@@ -1,10 +1,11 @@
 
+//Variables globales pour la partie personalisation
 let taille_selected = false;
 let nb_ingr_selected = 0;
 let prix_ingr = 1.5;
 let ingr_selected = new Map();
 
-
+//Fonction qui génère le html pour la bar de progression
 function gen_bar_choice() {
     let persoContainer = $("#persoContainer");
 
@@ -21,6 +22,8 @@ function gen_bar_choice() {
     
 }
 
+
+//Permet de savoir si taille est dans taille_auto (taille autorisée)
 function is_taille_auto(taille, taille_auto) {
     for(let i = 0; i < taille_auto.length; i++) {
         if(taille_auto[i] === taille) return true;
@@ -28,12 +31,13 @@ function is_taille_auto(taille, taille_auto) {
     return false;
 }
 
+//Génère le html du choix de tailles
 function gen_taille_choice(taille, taille_select, taille_auto) {
     let perso = $("#perso");
     let div = "<div class='card-body' id='taille'>" +
                 "<div class='row'>";
     for(let i = 0; i < taille.length; i++) {
-        div += "<div class='col-4'>"
+        div += "<div class='col-6 col-sm-4'>"
         div += "<div class='card" 
         + (taille_auto === undefined || is_taille_auto(taille[i].nom, taille_auto) ? " img-hover choice choice-taille " : " not-select ") 
         + (taille_select !== undefined && taille_select === taille[i].nom ? "active" : "") 
@@ -47,6 +51,7 @@ function gen_taille_choice(taille, taille_select, taille_auto) {
     perso.append(div);
 }
 
+//Génère le html du choix d'ingédients
 function gen_ingr_choice(ingr, ingr_select) {
     let perso = $("#perso");
 
@@ -76,6 +81,8 @@ function gen_ingr_choice(ingr, ingr_select) {
     perso.append(div);
 }
 
+//Génère le html de la validation de choix
+//Ajoute également la fonction sur la bouton valider qui permet d'ajouter au panier/ou au menu
 function gen_valid_choice(url,menu) {
     let perso = $("#perso");
 
@@ -119,6 +126,7 @@ function gen_valid_choice(url,menu) {
     });
 }
 
+//Génère le html du footer, là où il y a le prix et les boutons Suivant et Précédent
 function gen_footer_choice(isSelect) {
 
     let footer = "<div class='card-footer'>";
@@ -130,12 +138,14 @@ function gen_footer_choice(isSelect) {
     $("#perso").append(footer);
 }
  
+//Fonction pour switch entre 2 phases de personnalisation
 function switch_slide(b1, b2) {
     b1.slideToggle(500, function() {
         b2.slideToggle(500);
     })
 }
 
+//Permet de mettre à jour le prix 
 function update_price(nb_ingr, prix_ingr) {
     let prix_pizza = parseInt($(".choice-taille.active").attr("prix"));
     console.log(prix_pizza);
@@ -144,6 +154,7 @@ function update_price(nb_ingr, prix_ingr) {
     $('#prix-perso').text("Prix : " + prix + "€");
 }
 
+//Ajoute une fonction sur les cartes de taille qui permet de les selectionner
 function init_choice_taille_button() {
     $(".choice-taille").click(function() {
         taille_selected = true;
@@ -155,6 +166,7 @@ function init_choice_taille_button() {
     });
 }
 
+//Ajoute une fonction sur les boutons '+' du choix d'ingr, permettant d'incrémenter le compteur d'ingrédients
 function init_add_elt_button() {
     $(".add-elt").click(function() {
         if(nb_ingr_selected < 6) {
@@ -177,8 +189,7 @@ function init_add_elt_button() {
     });
 }
 
-
-
+//Ajoute une fonction sur les boutons '-' du choix d'ingr, permettant de décrémenter le compteur d'ingrédients
 function init_rm_elt_button() {
     $(".remove-elt").click(function() {
         let elt = $(this).parent().find(".count");
@@ -204,6 +215,7 @@ function init_rm_elt_button() {
     }); 
 }
 
+//Fonction qui est sur le bouton suivant, permet d'aller vers la prochaine phase
 function init_next_choice_button() {
     $("#next").click(function(){
         if(taille_selected) {
@@ -227,6 +239,7 @@ function init_next_choice_button() {
     });
 }
 
+//Fonction qui est sur le bouton précédent, permet d'aller vers la phase précédente
 function init_prev_choice_button() {
     $("#prev").click(function() {
         if($("#bar").text() === "Taille") return;
@@ -242,14 +255,16 @@ function init_prev_choice_button() {
     });
 }
 
+//Fonction qui lance la phase de personnalisation
 function init_perso(url,current_block,taille_select, ingr_select, menu) {
-    console.log("PERSO");
-    console.log(url);
+    //On demande au serveur les ingrédients
     $.get(url + "ingr", {}, (ingr) => {
+        //Puis les tailles de pizzas
         $.get(url + "taille", {}, (taille) => {
+            //On fait disparaitre le bloc affiché
             $("#grille").fadeOut("slow", function() {
-                console.log(taille);
-                console.log(ingr);
+                //On initialise des variables qui permettent de savoir 
+                //si on vient de Personnalisation d'une pizza préexistente ou non
                 current_block.block = $("#persoContainer");
                 taille_selected = (taille_select !== undefined);
                 nb_ingr_selected = 0;
@@ -261,9 +276,7 @@ function init_perso(url,current_block,taille_select, ingr_select, menu) {
                 if(ingr_select === undefined) ingr_selected = new Map();
                 else ingr_selected = ingr_select;
 
-                console.log(taille_select);
-                console.log(ingr_select);
-
+                //On génère le html, et on attache les fonctions aux bontons
                 $("#persoContainer").empty();
                 gen_bar_choice();
                 gen_taille_choice(taille, taille_select,(menu === undefined ? undefined : menu.format.tailles_pizza));
