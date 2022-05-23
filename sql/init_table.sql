@@ -98,6 +98,9 @@ CREATE TABLE ASS_TAILLE_BOI_MENU (
 INSERT INTO INGRS VALUES
 ('Jambon','images/ingr/jambons.png'),
 ('Mozzarella','images/ingr/mozzarella.png'),
+('Bleu','images/ingr/bleu.png'),
+('Chèvre','images/ingr/chevre.png'),
+('Miel','images/ingr/miel.png'),
 ('Champignon','images/ingr/champignons.webp'),
 ('Pepperoni', 'images/ingr/pepperoni.png'),
 ('Oignon','images/ingr/oignon.png'),
@@ -110,9 +113,9 @@ INSERT INTO INGRS VALUES
 ('Poulet','images/ingr/poulet.png');
 
 INSERT INTO TAILLES_PIZZA VALUES
-('Medium', 20, 'images/pizza/Medium.jpg'),
-('Large', 30, 'images/pizza/Large.jpg'),
-('XLarge', 40, 'images/pizza/Xlarge.jpg');
+('Medium', 10, 'images/pizza/Medium.jpg'),
+('Large', 14, 'images/pizza/Large.jpg'),
+('XLarge', 17, 'images/pizza/Xlarge.jpg');
 
 INSERT INTO SAUCES VALUES
 ('Moutarde', 1.15),
@@ -154,17 +157,35 @@ INSERT INTO ASS_ENT_SAU VALUES
 ('Nuggets de Poulet', 'Curry');
 
 INSERT INTO PIZZAS VALUES
+('Pizza Margherita', 'images/pizza/margherita2.jpeg'),
 ('Pizza Regina', 'images/pizza/regina.jpg'),
 ('Pizza Max Pepperoni', 'images/pizza/max_pepperoni.webp'),
+('Pizza Calzone', 'images/pizza/calzone.jpeg'),
+('Pizza Chèvre Miel', 'images/pizza/chevre-miel.jpeg'),
+('Pizza 3 Fromages', 'images/pizza/3fromages.webp'),
 ('Pizza Méditéraneenne', 'images/pizza/poulet-oignons.jpeg');
 
 INSERT INTO ASS_PIZZ_ING VALUES
-('Pizza Regina', 'Jambon', 3),
-('Pizza Regina', 'Champignon', 3),
-('Pizza Max Pepperoni', 'Pepperoni', 6),
-('Pizza Méditéraneenne', 'Poulet', 3),
-('Pizza Méditéraneenne', 'Oignon', 3),
-('Pizza Méditéraneenne', 'Olive', 3);
+('Pizza Margherita', 'Mozzarella', 1),
+('Pizza Margherita', 'Basilic', 1),
+('Pizza Margherita', 'Huile', 1),
+('Pizza Regina', 'Mozzarella', 1),
+('Pizza Regina', 'Jambon', 1),
+('Pizza Regina', 'Champignon', 1),
+('Pizza Chèvre Miel', 'Chèvre', 1),
+('Pizza Chèvre Miel', 'Miel', 1),
+('Pizza Chèvre Miel', 'Basilic', 1),
+('Pizza 3 Fromages', 'Mozzarella', 1),
+('Pizza 3 Fromages', 'Chèvre', 1),
+('Pizza 3 Fromages', 'Bleu', 1),
+('Pizza Max Pepperoni', 'Mozzarella', 1),
+('Pizza Max Pepperoni', 'Pepperoni', 3),
+('Pizza Méditéraneenne', 'Poulet', 2),
+('Pizza Méditéraneenne', 'Oignon', 2),
+('Pizza Méditéraneenne', 'Olive', 1),
+('Pizza Calzone', 'Mozzarella', 1),
+('Pizza Calzone', 'Lardon', 1),
+('Pizza Calzone', 'Oeuf', 1);
 
 INSERT INTO BOISSONS VALUES
 ('Coca Cola', 'images/boisson/coca.jpg'),
