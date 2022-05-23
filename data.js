@@ -1,6 +1,7 @@
-if(process.argv.length < 3){
+//Affiche les instructions de lancement du serveur si les arguments nécessaires ne sont pas renseignés
+if(process.argv.length < 4){
     console.log("Erreur nombre d'arguments, utilisez: ");
-    console.log("\tnode main.js [psql user] [optional: database password] [optional: database name]");
+    console.log("\tnode main.js [psql user] [database password] [optional: database name]");
     process.exit(1);
 }
 
@@ -12,36 +13,41 @@ let poolInfo = {
     database: process.argv.length >= 5 ? process.argv[4] : 'bd-web',
     port: 5432
 }
-if(process.argv.length >= 4){
-   poolInfo.password = process.argv[3];
-}
+
+poolInfo.password = process.argv[3];
+
+//Objet qui permet de se connecter à la base de données
 const pool = new pg.Pool(poolInfo);
 
-let prix_ajout_ingredient = 1.5;
 
+//La constante de prix d'ingrédients supplémentaires
+const prix_ajout_ingredient = 1.5;
+
+
+//Les fonctions suivantes permettent d'accéder ainsi qu'ajouter des données dans la base de données
+
+//Renvoie la liste des ingrédients
 async function getIngr() {
     const client = await pool.connect();
     let res = await client.query ("SELECT nom_ingr as nom, image_url FROM INGRS");
     client.release();
-    console.log(res.rows);
 
     return res.rows;
 }
 
+//Renvoie la liste des tailles des pizzas ainsi que leurs prix et des images pour les représenter
 async function getTaille() {
     const client = await pool.connect();
     let res = await client.query("SELECT nom_taille as nom, prix, image_url FROM TAILLES_PIZZA");
     client.release();
-    
-    console.log(res.rows);
 
     return res.rows;
 }
 
+//Renvoie les entrées avec leurs prix, images et sauces disponibles
 async function getEntree() {
     const client = await pool.connect();
     let res = await client.query ("SELECT nom_entree, prix_entree, image_url FROM ENTREES");
-    console.log(res.rows);
 
     let entree = [];
     for(let i = 0; i < res.rows.length; i++) {
@@ -64,11 +70,10 @@ async function getEntree() {
     return entree;
 }
 
-
+//Renvoie les boissons avec leurs images et leurs tailles disponibles avec le prix associés
 async function getBoisson() {
     const client = await pool.connect();
     let res = await client.query("SELECT nom_boisson, image_url FROM BOISSONS");
-    console.log(res.rows);
 
     let boisson = [];
     for(let i = 0; i < res.rows.length; i++) {
@@ -91,11 +96,11 @@ async function getBoisson() {
     return boisson;
 }
 
+//Renvoie la liste des pizzas
 async function getPizza() {
     const client = await pool.connect();
 
     let res = await client.query("SELECT nom_taille, prix FROM TAILLES_PIZZA");
-    console.log(res.rows);
 
     let taille = [];
     let taille_prix = [];
@@ -106,11 +111,7 @@ async function getPizza() {
         taille_prix.push(elt.prix);
     }
 
-    //await new Promise(r => setTimeout(r, 2000));
-
     res = await client.query("SELECT * FROM PIZZAS");
-    console.log(res.rows);
-
 
     let pizza = [];
     for(let i = 0; i < res.rows.length; i++) {
@@ -127,7 +128,7 @@ async function getPizza() {
                 pizza[j].ingredients.set(elt.nom_ingr, elt.quantite);
                 pizza[j].description += elt.nom_ingr + " x " + elt.quantite + ", ";
                 pizza[j].nb_ingr += elt.quantite;
-            } 
+            }
         }
     }
 
@@ -138,17 +139,16 @@ async function getPizza() {
     } 
 
     client.release();
-    console.log(pizza);
     return pizza;    
 }
 
+//Renvoie les ingrédients d'une pizza
 async function getIngr_Pizza(pizza) {
     const client = await pool.connect();
 
     let s = "SELECT nom_ingr, quantite FROM ASS_PIZZ_ING WHERE nom_pizza='" + pizza + "'";
     console.log(s);
     let res = await client.query("SELECT nom_ingr, quantite FROM ASS_PIZZ_ING WHERE nom_pizza='" + pizza + "'");
-    console.log(res.rows);
 
     let map = new Map();
     for(let i = 0; i < res.rows.length; i++) {
@@ -162,19 +162,20 @@ async function getIngr_Pizza(pizza) {
     return rep;
 }
 
+//Constructeur d'un objet Entree
 function Entree(nom, imageURL, prix) {
     this.nom = nom;
-    this.choices = ["Aucune sauce"];
+    this.choices = ["Aucune sauce"];//les sauces disponibles
     this.imageURL = imageURL;
     this.price = prix;
-    this.prices_choices = [0];
+    this.prices_choices = [0];//les prix de chaque sauces
     this.description = "";
 }
 
-
+//Constructeur d'un objet Pizza
 function Pizza(nom, taille, taille_prix, imageURL) {
     this.nom = nom;
-    this.ingredients = new Map();
+    this.ingredients = new Map();//sert à associer une quantité à chaque ingrédient de la pizza
     this.choices = taille;
     this.imageURL = imageURL;
     this.price = 0
@@ -184,16 +185,17 @@ function Pizza(nom, taille, taille_prix, imageURL) {
 
 }
 
+//Constructeur d'un objet Boisson
 function Boisson(nom, image_url) {
     this.nom = nom;
     this.price = 0;
-    this.choices = [];
-    this.prices_choices = [];
+    this.choices = [];//les tailles disponibles
+    this.prices_choices = [];//les prix de chaque taille
     this.imageURL = image_url;
     this.description = "";
 }
 
-
+//Construis le texte de description d'un menu dans l'attribut description de l'objet menu
 function getMenuDescr(menu) {
     menu.description = menu.nb_entree + " entrée(s) , " + menu.nb_pizza + " pizza(s), " + menu.nb_boisson + " boisson(s)<br>";
     menu.description += "Taille Pizza : ";
@@ -206,14 +208,15 @@ function getMenuDescr(menu) {
         menu.description += menu.tailles_boisson[i];
         if(i < menu.tailles_boisson.length - 1) menu.description += ", ";
     }
-}   
+}
 
+//Constructeur d'un objet Menu qui représente un format de menu
 function Menu(nom,nb_entree, nb_pizza, nb_boisson, image, prix) {
     this.nom = nom;
     this.nb_entree = nb_entree;
-    this.tailles_pizza = [];
+    this.tailles_pizza = [];//Les tailles de pizza disponibles pour ce menu
     this.nb_pizza = nb_pizza;
-    this.tailles_boisson = [];
+    this.tailles_boisson = [];//Les tailles de boisson disponibles pour ce menu
     this.nb_boisson = nb_boisson;
     this.imageURL = image;
     this.price = prix;
@@ -221,14 +224,13 @@ function Menu(nom,nb_entree, nb_pizza, nb_boisson, image, prix) {
 }
 
 
-
+//Génère un objet menu depuis la base de données
 async function genMenu() {
     let menus = [];
 
     const client = await pool.connect();
 
     let res = await client.query("SELECT * FROM MENUS");
-    console.log(res.rows);
     for(let i = 0; i < res.rows.length; i++) {
         let elt = res.rows[i];
         menus.push(new Menu(elt.nom_menu, elt.nb_entree, elt.nb_pizza, elt.nb_boisson, elt.image_url, elt.prix));
@@ -262,28 +264,18 @@ async function genMenu() {
 
     client.release();
 
-    console.log(menus);
     return menus;
 }
 
+//Renvoie un id pour un nouvel élément à ajouter dans une table
 async function getID(client, table) {
-    //console.log("SELECT MAX(id) + 1 as num FROM " + table);
     let res = await client.query("SELECT MAX(id) + 1 as num FROM " + table);
  
-    //console.log("ID " + table + " : " + res.rows[0].num);
     if(res.rows[0].num === null) res.rows[0].num = 0;
     return res.rows[0].num;
 }
 
-// id integer primary key, 
-//     nom varchar(100),
-//     prenom varchar(100),
-//     adresse varchar(100),
-//     code varchar(100),
-//     numero_portable char(10),
-//     email varchar(100),
-//     heure_livraison time
-
+//Insère une commande dans la base de données
 async function insertComm(client, id, nom, prenom, addr, code, num, email, heure) {
     let str = "";
     for(let i = 0; i < num.length; i++) {
@@ -293,11 +285,12 @@ async function insertComm(client, id, nom, prenom, addr, code, num, email, heure
     }
     num = str;
     if(code === undefined) code = "NULL";
-    console.log(num);
     let res = await client.query("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "',FALSE)");
     console.log("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "',FALSE)");
 }
 
+//Insère un nouveau groupe dans la base de données et renvoie son id
+//Un groupe est un groupe d'éléments d'une commande, c'est soit une commande entière, soit un menu
 async function create_group(client, id, menu) {
     let id_groupe = await getID(client, "groupe");
     if(menu) await client.query("INSERT INTO groupe VALUES (" + id_groupe + ",NULL," + id + ")");
@@ -305,6 +298,7 @@ async function create_group(client, id, menu) {
     return id_groupe;
 }
 
+//Insère un élément dans un groupe dans la base de données
 async function insert_elt(client, obj, groupe) {
     if(obj.type === 'boissons') {
         await client.query("INSERT INTO contient_boisson VALUES (" + groupe + ",'" + obj.name + "','" + obj.choice + "'," + obj.number + ")");
@@ -314,7 +308,7 @@ async function insert_elt(client, obj, groupe) {
         let id = await getID(client, "pizza");
         console.log("INSERT INTO pizza VALUES (" + id + ",'" + obj.name + "')");
         await client.query("INSERT INTO pizza VALUES (" + id + ",'" + obj.name + "')");
-        //Etape 4 pour les pizza perso inserer la pizza perso get le num et inserer chaque ingrédient
+        //Etape 4 pour les pizza perso inserer la pizza perso get le num et inserer chaque ingrédient (voire fonction storeCommand)
         if(obj.name === 'Pizza Personnalisée') {
             let str = "";
             for(let i = 0; i < obj.choice.length; i++) {
@@ -324,7 +318,6 @@ async function insert_elt(client, obj, groupe) {
                 str += obj.choice[i];
             }
             obj.choice = str.substring(0, str.length - 1);
-            console.log(obj.choice);
             for(let i = 0; i < obj.ingr.length; i++) {
                 let tab = obj.ingr[i];
                 await client.query("INSERT INTO pizza_ingredient VALUES (" + id + ",'" + tab[0] + "'," + tab[1] + ")");
@@ -335,6 +328,7 @@ async function insert_elt(client, obj, groupe) {
     }
 }
 
+//Insère une commande et son contenu dans la base de données
 async function storeCommande(req) {
 
     //Etape 1 Inserer la commande (get le num de la commande et la mettre)
@@ -372,7 +366,7 @@ async function storeCommande(req) {
 
 }
 
-
+//Renvoie l'id d'un groupe représentant un menu ou une commande
 async function get_groupe(client, id, menu) {
     if(menu) {
         let res = await client.query("select id FROM groupe WHERE menu=" + id);
@@ -384,7 +378,9 @@ async function get_groupe(client, id, menu) {
 
 }
 
+//Ajoute tous les éléments d'un groupe dans le panier
 async function add_elt_in_panier(client, panier, id_groupe) {
+    //Ajoute les entrées
     console.log("SELECT * FROM contient_entree WHERE groupe=" + id_groupe);
     let res = await client.query("SELECT * FROM contient_entree WHERE groupe=" + id_groupe);
     for(let i = 0; i < res.rows.length; i++) {
@@ -407,6 +403,7 @@ async function add_elt_in_panier(client, panier, id_groupe) {
         panier.push(o);
     }
 
+    //Ajoute les boissons
     res = await client.query("SELECT * FROM contient_boisson WHERE groupe=" + id_groupe);
     for(let i = 0; i < res.rows.length; i++) {
         let r = res.rows[i];
@@ -423,6 +420,7 @@ async function add_elt_in_panier(client, panier, id_groupe) {
         panier.push(o);
     }
 
+    //Ajoute les pizzas
     res = await client.query("SELECT * FROM contient_pizza WHERE groupe=" + id_groupe);
     for(let i = 0; i < res.rows.length; i++) {
         let r = res.rows[i];
@@ -460,12 +458,11 @@ async function add_elt_in_panier(client, panier, id_groupe) {
 
         panier.push(o);
     }
-
 }
 
+//Ajoute tous les menus d'une commande au panier
 async function add_elt_menu(client, panier, id_commande) {
     let res = await client.query("select * from contient_menu where commande=" + id_commande);
-    console.log(res.rows);
     for(let i = 0; i < res.rows.length; i++) {
         let r = res.rows[i];
 
@@ -482,28 +479,29 @@ async function add_elt_menu(client, panier, id_commande) {
         o.price = r_prix.rows[0].prix;
 
         let id_groupe = await get_groupe(client, r.menu, true);
-        console.log("ID MENU_GROUPE : " + id_groupe);
 
         let elts = [];
 
         await add_elt_in_panier(client, elts, id_groupe);
         o.elts = elts;
-        console.log(elts);
 
         panier.push(o);
 
     } 
 }
 
+//Renvoie la première commande à livrer
 async function getCommande() {
     let panier = [];
     let o;
     const client = await pool.connect();
 
+    //sélectionne la commande qui n'a pas été livrée avec l'heure de livraison la plus tôt
     let res = await client.query("select * from commande where not livree order by heure_livraison");
     if(res.rowCount !== 0) {
         let id_commande = res.rows[0].id;
         let r = res.rows[0];
+        //initialise l'objet de la commande
         o = {
             id: id_commande,
             nom: r.nom,
@@ -515,8 +513,10 @@ async function getCommande() {
             heure: r.heure_livraison
         }
         
+        //récupère l'id du groupe associé à la commande
         let id_groupe_comm = await get_groupe(client, id_commande, false);
 
+        //ajoute les éléments et les menus de la commande au panier
         await add_elt_in_panier(client, panier, id_groupe_comm);
         await add_elt_menu(client, panier, id_commande);
 
@@ -528,13 +528,11 @@ async function getCommande() {
     return o;
 }
 
+//Change l'attribut livree d'une commande à TRUE
 async function finishCommand(id){
-    console.log("id: "+id);
     const client = await pool.connect();
     await client.query("update commande set livree = TRUE where id = "+id);
     client.release();
 }
-
-getCommande();
 
 module.exports = {getPizza, getEntree, genMenu, getIngr, getTaille, getBoisson, getIngr_Pizza, storeCommande, getCommande, finishCommand};
