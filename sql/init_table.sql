@@ -251,8 +251,3 @@ INSERT INTO ASS_TAILLE_BOI_MENU VALUES
 ('Big Menu', '25cL'),
 ('Big Menu', '33cL'),
 ('Big Menu', '1L');
-
-
-
-
-

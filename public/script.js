@@ -52,7 +52,7 @@ function gen_perso_card(url, menu) {
     +   '<div class="card mb-4 shadow-sm img-hover">'
     +       '<img src="images/pizza/Xlarge.jpg" class="card-img-top" alt="image perso">'
     +       '<div class="card-body">'
-    +       '<h5 class="card-title">Pizza Personalisée</h5>'
+    +       '<h5 class="card-title">Pizza Personnalisée</h5>'
     +       '<p>Contruisez votre Pizza !</p>'
     +       '<p id="price" class="card-text">A partir de 10€</p>';
             
@@ -145,17 +145,17 @@ function nextMenuStep(url,menu){
 
 function animation_plus1(button) {
     let bidule = $('<span class="badge badge-primary badge-pill badge-success">+1</span>');
+    button.append(bidule);
+    
     bidule.css({
         "position": "absolute",
         "top": "90%",
-        "left":"50%",
+        "left": (button.width()/2+bidule.width())+"px",
     });
-
-    button.append(bidule);
 
     bidule.animate({
         opacity: 0,
-        top: "-=10%",
+        top: "-=20%",
     }, 1000, function() {
         $(this).remove();
     });

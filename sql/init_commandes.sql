@@ -80,33 +80,3 @@ CREATE TABLE contient_boisson (
     PRIMARY KEY (groupe, nom_boisson, taille),
     FOREIGN KEY (groupe) REFERENCES groupe(id)
 );
-
-
--- tests
--- insert into commande values
--- (0,'LEYMARIE','Alexandre','adresse',NULL,'0768935759','alexandre.j.leymarie@gmail.com','20:30');
-
--- insert into menu values
--- (0, 'BIG MENU');
-
--- insert into groupe values
--- (0, 0, NULL),
--- (1, NULL, 0);
-
--- insert into contient_entree values
--- (0, 'Salade1', 'Aucune sauce', 1),
--- (1, 'Salade2', 'Aucune sauce', 1);
-
--- insert into pizza values
--- (0, 'pepperoni pizza');
-
--- insert into pizza_ingredient values
--- (0, 'pepperoni', 1);
-
--- insert into contient_pizza values
--- (1, 0, 1);
-
--- insert into contient_menu values
--- (0, 0);
-
--- select * from pizza where id = (select pizza from contient_pizza join groupe on groupe.id=contient_pizza.groupe where menu = 0);

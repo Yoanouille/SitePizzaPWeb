@@ -1,5 +1,5 @@
 
-//Variables globales pour la partie personalisation
+//Variables globales pour la partie personnalisation
 let taille_selected = false;
 let nb_ingr_selected = 0;
 let prix_ingr = 1.5;
@@ -56,7 +56,8 @@ function gen_ingr_choice(ingr, ingr_select) {
     let perso = $("#perso");
 
     let div = "<div class='card-body' id='ingr'>" +
-                "<div class='row'>";
+                "<div class='row text-center'>"
+                +"<p class='text-secondary'>6 ingrédients maximum, dont 3 ingrédients gratuits, puis les ingrédients supplémentaires sont à 1.5€</p>";
     for(let i = 0; i < ingr.length; i++) {
         div += "<div class='col-sm-6 col-md-6 col-lg-3 col-12'><div class='card choice choice-ingr img-hover shadow-sm'>";
         div += "<img class='card-img-top' src='" + ingr[i].image_url + "' alt='medium'></img>";
@@ -88,7 +89,7 @@ function gen_valid_choice(url,menu) {
 
     let div = "<div class='card-body text-center' id='valid'>";
     div += "<div id='recap'></div>"
-    div += "<button type='button' id='valid-button' class='btn btn-primary'>Valider</button>" + "</div>";
+    div += "<button type='button' id='valid-button' class='btn btn-success'>Valider</button>" + "</div>";
 
     perso.append(div);
 
