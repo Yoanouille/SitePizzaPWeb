@@ -154,7 +154,7 @@ async function getIngr_Pizza(pizza) {
 
 function Entree(nom, imageURL, prix) {
     this.nom = nom;
-    this.choices = ["Aucune"];
+    this.choices = ["Aucune sauce"];
     this.imageURL = imageURL;
     this.price = prix;
     this.prices_choices = [0];
@@ -386,12 +386,12 @@ async function add_elt_in_panier(client, panier, id_groupe) {
             type: 'entrees'
         }
         
-        if(r.sauce !== "Aucune") {
+        if(r.sauce !== "Aucune sauce") {
             let r_prix = await client.query("select prix_sauce + prix_entree as prix from entrees natural join ass_ent_sau natural join sauces where nom_entree='" + o.name + "' AND nom_sauce='" + o.choice + "'");
-            o.prix = r_prix.rows[0].prix;
+            o.price = r_prix.rows[0].prix;
         } else {
             let r_prix = await client.query("select prix_entree as prix from entrees where nom_entree='" + o.name + "'");
-            o.prix = r_prix.rows[0].prix;
+            o.price = r_prix.rows[0].prix;
         }
 
         panier.push(o);
@@ -408,7 +408,7 @@ async function add_elt_in_panier(client, panier, id_groupe) {
         }
         
         let r_prix = await client.query("select prix from boissons natural join boi_tai_pri where nom_boisson='" + o.name + "' AND taille='" + o.choice + "'");
-        o.prix = r_prix.rows[0].prix;
+        o.price = r_prix.rows[0].prix;
 
         panier.push(o);
     }
@@ -437,14 +437,15 @@ async function add_elt_in_panier(client, panier, id_groupe) {
                 let r3 = res3.rows[j];
                 ingr.push([r3.ingredient, r3.nombre]);
                 nb_ingr += r3.nombre;
+                o.choice += (j===0 ? " + ": ", ")+r3.nombre+" "+r3.ingredient;
             }
 
             o.ingr = ingr;
-            o.prix = prix_taille + (nb_ingr <= 3 ? 0 : (nb_ingr - 3) * prix_ajout_ingredient);
+            o.price = prix_taille + (nb_ingr <= 3 ? 0 : (nb_ingr - 3) * prix_ajout_ingredient);
         } else {
             let res_prix = await client.query("SELECT SUM(quantite) as nb FROM ASS_PIZZ_ING WHERE nom_pizza='" + o.name + "' GROUP BY nom_pizza");
             let nb_ingr = res_prix.rows[0].nb;
-            o.prix = prix_taille + (nb_ingr <= 3 ? 0 : (nb_ingr - 3) * prix_ajout_ingredient);
+            o.price = prix_taille + (nb_ingr <= 3 ? 0 : (nb_ingr - 3) * prix_ajout_ingredient);
         }
 
         panier.push(o);
@@ -468,7 +469,7 @@ async function add_elt_menu(client, panier, id_commande) {
         }
 
         let r_prix = await client.query("select prix from menus where nom_menu='" + o.name + "'");
-        o.prix = r_prix.rows[0].prix;
+        o.price = r_prix.rows[0].prix;
 
         let id_groupe = await get_groupe(client, r.menu, true);
         console.log("ID MENU_GROUPE : " + id_groupe);

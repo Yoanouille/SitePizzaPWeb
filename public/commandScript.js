@@ -1,4 +1,4 @@
-function gen_elt(elt){
+/*function gen_elt(elt){
     let s =
      '<li class="list-group-item d-flex justify-content-between align-items-center">'
     +   '<div><span class="name-panier">'+elt.name+'</span>';
@@ -58,7 +58,7 @@ function gen_panier(panier){
     '<li class="list-group-item d-flex justify-content-between align-items-center"><span class="badge badge-secondary">Total: '+totalPrice+'€</span></li>'
     +'</ul>';
     return $(p);
-}
+}*/
 
 function setCommandInfo(command){
     $("#Nom").val(command.nom);
@@ -76,7 +76,7 @@ function setCommandInfo(command){
 }
 
 function update_panier(panier) {
-    $("#commandContainer").html(gen_panier(panier));
+    $("#commandContainer").html(gen_panier(panier, true));
     $("[data-toggle=tooltip]").tooltip();
 }
 
