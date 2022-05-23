@@ -77,11 +77,11 @@ img {
 }
 
 .choice:hover {
-    background-color: blue;
+    background-color: rgb(237, 237, 237);
 }
 
 .choice.active {
-    background-color: green;
+    background-color: rgb(26,135,83);
 }
 
 .card-body.elt {

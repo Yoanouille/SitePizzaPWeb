@@ -11,7 +11,7 @@ function gen_bar_choice() {
     let card = '<div class="card" id="perso">'
                 +  '<div class="card-header">'
                 +      '<div class="progress" style="height: 32px">'
-                +         '<div class="progress-bar progress-bar-striped progress-bar-animated" id="bar" role="progressbar" style="width: 33.33%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"><span id="barText">Taille</span></div>'
+                +         '<div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="bar" role="progressbar" style="width: 33.33%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"><span id="barText">Taille</span></div>'
                 +      '</div>'
                 +  ' </div>'
                 + '</div>';
@@ -53,7 +53,7 @@ function gen_ingr_choice(ingr, ingr_select) {
     let div = "<div class='card-body' id='ingr'>" +
                 "<div class='row'>";
     for(let i = 0; i < ingr.length; i++) {
-        div += "<div class='col-sm-6 col-md-6 col-lg-3 col-12'><div class='card choice choice-ingr img-hover'>";
+        div += "<div class='col-sm-6 col-md-6 col-lg-3 col-12'><div class='card choice choice-ingr img-hover shadow-sm'>";
         div += "<img class='card-img-top' src='" + ingr[i].image_url + "' alt='medium'></img>";
         div += "<div class='card-body elt'>" + "<p class='nom-ingr'>" + ingr[i].nom + "</p>" + "<p class='prix-ingr'>Gratuit</p>" + "</div>";
         div += "<div class='btn-group btn-group-justified' role='group'>"
