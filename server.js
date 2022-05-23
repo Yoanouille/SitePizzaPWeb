@@ -15,6 +15,19 @@ server.get('/', (req, res) => {
     res.sendFile("page.html", {root: 'public'});
 });
 
+server.get('/livraison', (req, res) => {
+    res.sendFile("livraison.html", {root: 'public'});
+});
+
+server.post('/livraison', (req, res) => {
+    data.finishCommand(req.body.commandId);
+    res.sendFile("livraison.html", {root: 'public'});
+});
+
+server.get('/commande', (req, res) => {
+    data.getCommande().then(resul => {res.json(resul);}).catch(err => console.log(err.stack));
+});
+
 server.get('/menus', (req, res) => {
     data.genMenu().then(resul => {res.json(resul);}).catch(err => console.log(err.stack));
 });

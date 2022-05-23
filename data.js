@@ -2,7 +2,7 @@ let prix_ajout_ingredient = 1.5;
 
 const pg = require('pg');
 const pool = new pg.Pool({
-    user: 'yoan',
+    user: 'alexandreleymarie',
     host: 'localhost',
     database: 'bd-web',
     password: 'yoyo',
@@ -284,8 +284,8 @@ async function insertComm(client, id, nom, prenom, addr, code, num, email, heure
     num = str;
     if(code === undefined) code = "NULL";
     console.log(num);
-    let res = await client.query("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "')");
-    console.log("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "')");
+    let res = await client.query("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "',FALSE)");
+    console.log("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "',FALSE)");
 }
 
 async function create_group(client, id, menu) {
@@ -467,6 +467,9 @@ async function add_elt_menu(client, panier, id_commande) {
             number: 1,
         }
 
+        let r_prix = await client.query("select prix from menus where nom_menu='" + o.name + "'");
+        o.prix = r_prix.rows[0].prix;
+
         let id_groupe = await get_groupe(client, r.menu, true);
         console.log("ID MENU_GROUPE : " + id_groupe);
 
@@ -486,11 +489,12 @@ async function getCommande() {
     let o;
     const client = await pool.connect();
 
-    let res = await client.query("select * from commande");
+    let res = await client.query("select * from commande where not livree order by heure_livraison");
     if(res.rowCount !== 0) {
         let id_commande = res.rows[0].id;
         let r = res.rows[0];
         o = {
+            id: id_commande,
             nom: r.nom,
             prenom: r.prenom,
             addr: r.adresse,
@@ -510,10 +514,16 @@ async function getCommande() {
     }
     
     client.release();
-
-    console.log(o);
     return o;
 }
+
+async function finishCommand(id){
+    console.log("id: "+id);
+    const client = await pool.connect();
+    await client.query("update commande set livree = TRUE where id = "+id);
+    client.release();
+}
+
 getCommande();
 
-module.exports = {getPizza, getEntree, genMenu, getIngr, getTaille, getBoisson, getIngr_Pizza, storeCommande};
+module.exports = {getPizza, getEntree, genMenu, getIngr, getTaille, getBoisson, getIngr_Pizza, storeCommande, getCommande, finishCommand};

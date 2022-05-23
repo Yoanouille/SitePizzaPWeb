@@ -16,7 +16,8 @@ CREATE TABLE commande (
     code varchar(100),
     numero_portable char(10),
     email varchar(100),
-    heure_livraison time
+    heure_livraison time,
+    livree boolean
 );
 
 CREATE TABLE menu (
