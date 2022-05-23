@@ -17,6 +17,7 @@ CREATE TABLE commande (
     numero_portable char(10),
     email varchar(100),
     heure_livraison time,
+    prise_en_charge boolean,
     livree boolean
 );
 

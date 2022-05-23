@@ -285,8 +285,8 @@ async function insertComm(client, id, nom, prenom, addr, code, num, email, heure
     }
     num = str;
     if(code === undefined) code = "NULL";
-    let res = await client.query("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "',FALSE)");
-    console.log("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "',FALSE)");
+    let res = await client.query("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "',FALSE,FALSE)");
+    console.log("INSERT INTO commande VALUES (" + id + ",'" + nom + "','" + prenom + "','" + addr + "','" + code + "','" + num + "','" + email + "','" + heure + "',FALSE,FALSE)");
 }
 
 //Insère un nouveau groupe dans la base de données et renvoie son id
@@ -496,8 +496,8 @@ async function getCommande() {
     let o;
     const client = await pool.connect();
 
-    //sélectionne la commande qui n'a pas été livrée avec l'heure de livraison la plus tôt
-    let res = await client.query("select * from commande where not livree order by heure_livraison");
+    //sélectionne la commande avec l'heure de livraison la plus tôt, parmi celles qui n'ont pas été livrées et ne sont pas prises en charge par un autre livreur
+    let res = await client.query("select * from commande where not livree and not prise_en_charge order by heure_livraison");
     if(res.rowCount !== 0) {
         let id_commande = res.rows[0].id;
         let r = res.rows[0];
@@ -522,8 +522,10 @@ async function getCommande() {
 
         o.panier = panier;
 
+        //cette commande est maintenant prise en charge
+        await client.query("update commande set prise_en_charge = TRUE where id = "+id_commande);
     }
-    
+
     client.release();
     return o;
 }
