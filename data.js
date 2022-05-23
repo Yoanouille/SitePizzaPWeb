@@ -1,13 +1,23 @@
-let prix_ajout_ingredient = 1.5;
+if(process.argv.length < 3){
+    console.log("Erreur nombre d'arguments, utilisez: ");
+    console.log("\tnode main.js [psql user] [optional: database password] [optional: database name]");
+    process.exit(1);
+}
 
 const pg = require('pg');
-const pool = new pg.Pool({
-    user: 'alexandreleymarie',
+
+let poolInfo = {
+    user: process.argv[2],
     host: 'localhost',
-    database: 'bd-web',
-    password: 'yoyo',
+    database: process.argv.length >= 5 ? process.argv[4] : 'bd-web',
     port: 5432
-});
+}
+if(process.argv.length >= 4){
+   poolInfo.password = process.argv[3];
+}
+const pool = new pg.Pool(poolInfo);
+
+let prix_ajout_ingredient = 1.5;
 
 async function getIngr() {
     const client = await pool.connect();
