@@ -21,14 +21,21 @@ function gen_bar_choice() {
     
 }
 
-function gen_taille_choice(taille, taille_select) {
-    let perso = $("#perso");
+function is_taille_auto(taille, taille_auto) {
+    for(let i = 0; i < taille_auto.length; i++) {
+        if(taille_auto[i] === taille) return true;
+    }
+    return false;
+}
 
+function gen_taille_choice(taille, taille_select, taille_auto) {
+    let perso = $("#perso");
     let div = "<div class='card-body' id='taille'>" +
                 "<div class='row'>";
     for(let i = 0; i < taille.length; i++) {
         div += "<div class='col-4'>"
-        div += "<div class='card img-hover choice choice-taille " 
+        div += "<div class='card" 
+        + (taille_auto === undefined || is_taille_auto(taille[i].nom, taille_auto) ? " img-hover choice choice-taille " : " not-select ") 
         + (taille_select !== undefined && taille_select === taille[i].nom ? "active" : "") 
         + " mb-4'  prix='" + taille[i].prix + "' nom='" + taille[i].nom + "'>";
         div += "<img class='card-img-top' src='" + taille[i].image_url + "' alt='medium'></img>";
@@ -99,7 +106,7 @@ function gen_valid_choice(url,menu) {
             if(menu === undefined){
                 panier.push(o);
                 update_panier();
-                $("#perso").fadeOut("slow", function() {
+                current_block.block.fadeOut("slow", function() {
                     current_block.block = $("#grille");
                     $("#grille").fadeIn("slow");
                 });
@@ -259,7 +266,7 @@ function init_perso(url,current_block,taille_select, ingr_select, menu) {
 
                 $("#persoContainer").empty();
                 gen_bar_choice();
-                gen_taille_choice(taille, taille_select);
+                gen_taille_choice(taille, taille_select,(menu === undefined ? undefined : menu.format.tailles_pizza));
                 gen_ingr_choice(ingr, ingr_select);
                 gen_valid_choice(url,menu);
                 gen_footer_choice(taille_selected);
