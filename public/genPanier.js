@@ -53,7 +53,7 @@ function gen_menu(menu, livraison){
 function gen_panier(panier, livraison){
     let p =
      '<ul id="panier" class="list-group shadow-sm">'
-    +'<li class="list-group-item text-center"><h4>Panier</h4></li>';
+    +'<li class="list-group-item text-center"><h4>' + (livraison ? 'Commande' : 'Panier') + '</h4></li>';
         //Pour chaque élément du panier, on génère son code html et on ajoute son prix au prix total
         let totalPrice = 0;
         for(let elt of panier){

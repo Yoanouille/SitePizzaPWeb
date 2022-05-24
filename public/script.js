@@ -147,10 +147,12 @@ function animation_plus1(button) {
     let bidule = $('<span class="badge badge-primary badge-pill badge-success">+1</span>');
     button.append(bidule);
     
+    let card = button.parent().parent();
+
     bidule.css({
         "position": "absolute",
         "top": "90%",
-        "left": (button.width()/2+bidule.width())+"px",
+        "left": (card.width()/2-bidule.width()/2)+"px",
     });
 
     bidule.animate({
