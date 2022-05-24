@@ -472,6 +472,7 @@ async function add_elt_menu(client, panier, id_commande) {
         let o = {
             name: r2.nom,
             type: 'menus',
+            menu: true,
             number: 1,
         }
 
