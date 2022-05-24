@@ -232,9 +232,9 @@ INSERT INTO BOI_TAI_PRI VALUES
 ('Cristaline', '1L', 1);
 
 INSERT INTO MENUS VALUES
-('Small Menu', 'images/menu/menu1.jpg',25, 1, 1, 1),
+('Small Menu', 'images/menu/menu1.jpg',15, 1, 1, 1),
 ('Medium Menu', 'images/menu/menu3.png',35, 2, 2, 2),
-('Big Menu', 'images/menu/menu2.png',45, 3, 3, 3);
+('Big Menu', 'images/menu/menu2.png',50, 3, 3, 3);
 
 INSERT INTO ASS_TAILLE_PIZZA_MENU VALUES
 ('Small Menu', 'Medium'),
